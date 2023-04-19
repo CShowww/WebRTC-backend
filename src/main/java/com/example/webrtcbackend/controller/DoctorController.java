@@ -8,10 +8,9 @@ import com.example.webrtcbackend.service.Impl.DoctorServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -47,8 +46,20 @@ public class DoctorController {
 
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest request){
-        
+
         request.getSession().removeAttribute("doctor");
         return R.success("Log out success.");
     }
+
+    @PutMapping
+    public R<String> update(HttpServletRequest request,@RequestBody Doctor doctor){
+        log.info(doctor.toString());
+
+        Long docId = (Long)request.getSession().getAttribute("doctor");
+
+        doctorService.updateById(doctor);
+
+        return R.success("Modify profile success.");
+    }
+    
 }
