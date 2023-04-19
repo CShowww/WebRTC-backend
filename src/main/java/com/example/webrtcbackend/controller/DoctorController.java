@@ -1,10 +1,12 @@
 package com.example.webrtcbackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webrtcbackend.common.R;
 import com.example.webrtcbackend.entity.Doctor;
 import com.example.webrtcbackend.service.DoctorService;
 import com.example.webrtcbackend.service.Impl.DoctorServiceImpl;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
@@ -70,5 +72,20 @@ public class DoctorController {
         }
         return R.error("This doctor does not exist.");
 
+    }
+
+    /**
+     * 查的是patient，先用doctor代替
+     */
+    @GetMapping("/page")
+    public R<Page> page(int page, int pageSize, String name){
+
+        Page pageInfo = new Page(page,pageSize);
+        LambdaQueryWrapper<Doctor> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.like(StringUtils.isNotEmpty(name),Doctor::getName,name);
+        queryWrapper.orderByDesc(Doctor::getId);
+        doctorService.page(pageInfo,queryWrapper);
+
+        return R.success(pageInfo);
     }
 }
