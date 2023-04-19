@@ -22,5 +22,7 @@ public class Doctor implements Serializable {
 
     private String idNumber;
 
+    private Integer status;
+
     private Integer role;
 }
