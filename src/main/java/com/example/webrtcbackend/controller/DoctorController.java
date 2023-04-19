@@ -44,4 +44,11 @@ public class DoctorController {
         request.getSession().setAttribute("doctor", doc.getId());
         return R.success(doc);
     }
+
+    @PostMapping("/logout")
+    public R<String> logout(HttpServletRequest request){
+        
+        request.getSession().removeAttribute("doctor");
+        return R.success("Log out success.");
+    }
 }
