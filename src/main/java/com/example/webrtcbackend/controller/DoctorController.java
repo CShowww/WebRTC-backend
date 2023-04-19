@@ -61,5 +61,14 @@ public class DoctorController {
 
         return R.success("Modify profile success.");
     }
-    
+
+    @GetMapping("/{id}")
+    public R<Doctor> getById(@PathVariable Long id){
+        Doctor doctor = doctorService.getById(id);
+        if (doctor != null){
+            return R.success(doctor) ;
+        }
+        return R.error("This doctor does not exist.");
+
+    }
 }
