@@ -21,10 +21,10 @@ public class DoctorController {
 
     @PostMapping("/login")
     public R<Doctor> login(HttpServletRequest request, @RequestBody Doctor doctor){
-        //1、将页面提交的密码进行md5加密处理
+        // md5
         String password = doctor.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
 
-        //2、根据页面提交的用户名来查数据库
         LambdaQueryWrapper<Doctor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Doctor::getUsername, doctor.getUsername());
         Doctor doc = doctorService.getOne(queryWrapper);
@@ -38,10 +38,10 @@ public class DoctorController {
         }
 
         if (doc.getStatus() == 0) {
-            return R.error("账号已禁用");
+            return R.error("This account is prohibition of use.");
         }
 
-        request.getSession().setAttribute("employee", doc.getId());
+        request.getSession().setAttribute("doctor", doc.getId());
         return R.success(doc);
     }
 }
