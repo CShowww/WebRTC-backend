@@ -1,4 +1,4 @@
-package com.example.webrtcbackend.Entity.bo;
+package com.example.webrtcbackend.entity.bo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

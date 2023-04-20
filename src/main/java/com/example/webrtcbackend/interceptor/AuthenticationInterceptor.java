@@ -1,14 +1,14 @@
-package com.example.webrtcbackend.Interceptor;
+package com.example.webrtcbackend.interceptor;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.example.webrtcbackend.Entity.bo.User;
-import com.example.webrtcbackend.Service.UserService;
-import com.example.webrtcbackend.Token.PassToken;
-import com.example.webrtcbackend.Token.UserLoginToken;
+import com.example.webrtcbackend.entity.bo.User;
+import com.example.webrtcbackend.service.UserService;
+import com.example.webrtcbackend.token.PassToken;
+import com.example.webrtcbackend.token.UserLoginToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
