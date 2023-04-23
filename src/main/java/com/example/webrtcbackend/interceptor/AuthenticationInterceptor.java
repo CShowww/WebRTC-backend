@@ -19,7 +19,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.lang.reflect.Method;
 
 public class AuthenticationInterceptor implements HandlerInterceptor {
-
     @Autowired
     UserService userService;
 
