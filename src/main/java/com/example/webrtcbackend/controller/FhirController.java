@@ -6,16 +6,14 @@ import com.example.webrtcbackend.service.FhirService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 @Slf4j
 @RestController
 @RequestMapping("/fhir")
-@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin
 public class FhirController {
     @Autowired
     private FhirService fhirService;
@@ -89,8 +87,6 @@ public class FhirController {
         }
         return R.success(rel);
     }
-
-
 
     // Get Fhir resource Identifier
     private String getFhirResource(String uri){
