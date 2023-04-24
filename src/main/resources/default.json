@@ -1,0 +1,279 @@
+{
+  "debug": {
+    "trace": false,
+    "logCallbacks": false
+  },
+  "server": {
+    "scheme": "http",
+    "port": 8888,
+    "externalPort": 8888,
+    "host": "localhost",
+    "path": null,
+    "cors": {
+      "allowedOrigins": [
+        "*"
+      ]
+    },
+    "tls": {
+      "enabled": false,
+      "key": null,
+      "cert": null,
+      "passphrase": null
+    },
+    "auth": {
+      "enabled": true,
+      "jwksUri": "https://{Fill In Keycloak endpoint}.vsbox.dev/auth/realms/master/protocol/openid-connect/certs",
+      "audience": "virtual-doctor-webrtc",
+      "maxSessionDurationSeconds": 43200,
+      "extractableClaims": [
+        {
+          "key": "fullName",
+          "claimPath": "name"
+        },
+        {
+          "key": "givenName",
+          "claimPath": "given_name"
+        },
+        {
+          "key": "familyName",
+          "claimPath": "family_name"
+        },
+        {
+          "key": "emailAddress",
+          "claimPath": "email"
+        },
+        {
+          "key": "mobileNumber",
+          "claimPath": "phone_number"
+        },
+        {
+          "key": "dateOfBirth",
+          "claimPath": "birth_date"
+        },
+        {
+          "key": "gender",
+          "claimPath": "gender"
+        },
+        {
+          "key": "myMTSHealthPatientId",
+          "claimPath": "my_mts_health_patient_id"
+        }
+      ],
+      "roleMappings": {
+        "admin": "webrtc-admin",
+        "host": "webrtc-host",
+        "user": "webrtc-user",
+        "listener": "webrtc-listener",
+        "practitioner": "virtual-doctor::virtual-doctor-practitioner",
+        "patient": "virtual-doctor::virtual-doctor-patient"
+      },
+      "roleRestrictions": {
+        "connect": [
+          "*"
+        ],
+        "disconnect": [
+          "*"
+        ],
+        "configuration": [
+          "*"
+        ],
+        "listRooms": [
+          "+"
+        ],
+        "listAllRooms": [
+          "listener"
+        ],
+        "describeRoom": [
+          "+"
+        ],
+        "createRoom": [
+          "admin",
+          "host"
+        ],
+        "deleteRoom": [
+          "host"
+        ],
+        "deleteAnyRoom": [
+          "admin"
+        ],
+        "joinRoom": [
+          "+"
+        ],
+        "joinAnyRoom": [
+          "admin",
+          "listener"
+        ],
+        "leaveRoom": [
+          "+"
+        ],
+        "closeRoom": [
+          "host"
+        ],
+        "closeAnyRoom": [
+          "admin"
+        ],
+        "sendRoomMessage": [
+          "+"
+        ],
+        "requestMute": [
+          "admin",
+          "host"
+        ],
+        "requestUnmute": [
+          "admin",
+          "host"
+        ],
+        "listCreatedInvitations": [
+          "+"
+        ],
+        "listReceivedInvitations": [
+          "+"
+        ],
+        "createInvitation": [
+          "admin",
+          "host"
+        ],
+        "deleteInvitation": [
+          "admin",
+          "host"
+        ],
+        "sendInvitation": [
+          "admin",
+          "host"
+        ],
+        "acceptInvitation": [
+          "+"
+        ],
+        "declineInvitation": [
+          "+"
+        ],
+        "subscribeUserEvents": [
+          "admin",
+          "host"
+        ],
+        "unsubscribeUserEvents": [
+          "admin",
+          "host"
+        ],
+        "listUsers": [
+          "admin",
+          "host",
+          "listener"
+        ],
+        "updateUser:others": [
+          "admin",
+          "host"
+        ],
+        "updateUser:self": [
+          "+"
+        ],
+        "shareScreen": [
+          "+"
+        ],
+        "unshareScreen": [
+          "+"
+        ],
+        "listChats": [
+          "+"
+        ],
+        "createChat": [
+          "+"
+        ],
+        "closeChat": [
+          "+"
+        ],
+        "deleteChat": [
+          "admin",
+          "host"
+        ],
+        "listChatMessages": [
+          "+"
+        ],
+        "createChatMessage": [
+          "+"
+        ],
+        "updateChatMessage": [
+          "+"
+        ],
+        "unsendChatMessage": [
+          "+"
+        ],
+        "deleteChatMessage": [
+          "admin",
+          "host"
+        ],
+        "listRoomChats": [
+          "+"
+        ],
+        "createRoomChat": [
+          "+"
+        ],
+        "listFiles": [
+          "+"
+        ],
+        "createFile": [
+          "+"
+        ],
+        "uploadFilePart": [
+          "+"
+        ],
+        "deleteFile": [
+          "+"
+        ],
+        "createStateful": [
+          "+"
+        ],
+        "deleteStateful": [
+          "+"
+        ],
+        "publishState": [
+          "+"
+        ],
+        "message": [
+          "+"
+        ],
+        "trace": [
+          "+"
+        ]
+      }
+    },
+    "sensitiveKeys": [
+      "emailAddress",
+      "mobileNumber",
+      "isAdmin",
+      "isHost",
+      "isUser"
+    ]
+  },
+  "users": {
+    "retentionPeriod": 21600000
+  },
+  "rooms": {
+    "maxClientsPerRoom": 8
+  },
+  "fileService": {
+    "storageLocation": "tests/uploaded"
+  },
+  "stunServers": [
+    {
+      "urls": "stun:global.stun.twilio.com:3478"
+    }
+  ],
+  "turnServers": [
+    {
+      "urls": "turn:global.turn.twilio.com:3478?transport=udp",
+      "username": "75de034a609451a5ce7c0e5ee066d11d52dd85bd11ce290d3110ccffd253c262",
+      "credential": "mVDtuBO5pgiZL2wSaHFqiCFUiF4zzBQxvEDvzddSo/Y="
+    },
+    {
+      "urls": "turn:global.turn.twilio.com:3478?transport=tcp",
+      "username": "75de034a609451a5ce7c0e5ee066d11d52dd85bd11ce290d3110ccffd253c262",
+      "credential": "mVDtuBO5pgiZL2wSaHFqiCFUiF4zzBQxvEDvzddSo/Y="
+    },
+    {
+      "urls": "turn:global.turn.twilio.com:443?transport=tcp",
+      "username": "75de034a609451a5ce7c0e5ee066d11d52dd85bd11ce290d3110ccffd253c262",
+      "credential": "mVDtuBO5pgiZL2wSaHFqiCFUiF4zzBQxvEDvzddSo/Y="
+    }
+  ]
+}
