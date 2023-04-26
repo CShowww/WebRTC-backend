@@ -32,7 +32,7 @@ public class FhirController {
         }
         return R.success(rel);
     }
-    @GetMapping("/{resource}")
+    @GetMapping("/list/{resource}")
     public R<String> getAll(@PathVariable String resource) {
         log.info("GET ALL Fhir");
         String rel = "";
@@ -62,7 +62,7 @@ public class FhirController {
 
 
     @DeleteMapping("/{resource}/{id}")
-    public R<String> delete(@PathVariable String resource, String id) {
+    public R<String> delete(@PathVariable String resource, @PathVariable String id) {
         String rel = "";
         try {
             rel = fhirService.delete(resource, id);
@@ -75,8 +75,9 @@ public class FhirController {
         return R.success(rel);
     }
 
-    @PostMapping ("/{resource}")
+    @PostMapping ("/new/{resource}")
     public R<String> add(@PathVariable String resource, @RequestBody String data) {
+        log.info("Fhir POSTMAPPING");
         String rel = "";
         try {
             rel = fhirService.add(resource, data);

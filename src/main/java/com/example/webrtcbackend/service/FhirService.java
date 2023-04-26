@@ -22,10 +22,9 @@ public interface FhirService {
     @RequestMapping(value = "/{resource}", method = RequestMethod.GET)
     public String getAll(@PathVariable String resource);
 
-    @RequestMapping(value = "/{resource}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{resource}", method = RequestMethod.POST, headers = "content-type=application/fhir+json")
     public String add(@PathVariable String resource, String data);
 
-    @Headers("Content-Type: application/fhir+json")
     @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.PUT, headers = "content-type=application/fhir+json")
     public String update(@PathVariable String resource,@PathVariable String id, @RequestBody String data);
 
