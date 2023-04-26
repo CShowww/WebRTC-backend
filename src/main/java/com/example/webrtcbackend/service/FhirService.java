@@ -1,5 +1,6 @@
 package com.example.webrtcbackend.service;
 
+import com.example.webrtcbackend.config.FeignConfig;
 import feign.Headers;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
@@ -10,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @FeignClient(
         value="${fhir.name}",
-        url="${fhir.url}"
+        url="${fhir.url}",
+        configuration = FeignConfig.class
 )
 
 @Primary
