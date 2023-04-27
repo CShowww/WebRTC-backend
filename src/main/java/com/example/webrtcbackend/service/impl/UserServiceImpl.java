@@ -1,11 +1,16 @@
 package com.example.webrtcbackend.service.impl;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.webrtcbackend.entity.bo.User;
 import com.example.webrtcbackend.service.UserService;
 import com.example.webrtcbackend.mapper.UserMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
 * @author 63013
@@ -24,7 +29,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return this.getById(userId);
     }
 
-
+    @Override
+    public void saveToken(HttpServletRequest httpServletRequest) {
+        String token = httpServletRequest.getHeader("token");
+        if (token == null) {
+            throw new RuntimeException("无token，请重新登录");
+        }
+        String userId = httpServletRequest.getParameter("userId");
+        Date expiresAt;
+        String signature;
+        try {
+            expiresAt = JWT.decode(token).getExpiresAt();
+            signature = JWT.decode(token).getSignature();
+        } catch (JWTDecodeException j) {
+            throw new RuntimeException("401");
+        }
+        User user = new User();
+        user.setToken(signature);
+        user.setId(userId);
+        user.setExpiredTime(expiresAt);
+        this.save(user);
+    }
 }
 
 

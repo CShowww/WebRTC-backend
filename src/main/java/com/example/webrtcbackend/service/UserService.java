@@ -2,6 +2,7 @@ package com.example.webrtcbackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.webrtcbackend.entity.bo.User;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author 63013
@@ -10,5 +11,7 @@ import com.example.webrtcbackend.entity.bo.User;
 */
 public interface UserService extends IService<User> {
 
-    User findUserById(String userId);
+    public User findUserById(String userId);
+
+    public void saveToken(HttpServletRequest httpServletRequest);
 }
