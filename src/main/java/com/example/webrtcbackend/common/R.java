@@ -16,6 +16,13 @@ public class R<T> {
 
     private Map map = new HashMap(); //动态数据
 
+    public static <T> R<T> success() {
+        R<T> r = new R<T>();
+        r.data = null;
+        r.code = 1;
+        return r;
+    }
+
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;

@@ -1,7 +1,7 @@
 package com.example.webrtcbackend.service;
 
 import com.example.webrtcbackend.config.FeignConfig;
-import feign.Headers;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Primary
 public interface FhirService {
     // RESTful CRUD Operation
-    @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
     public String get(@PathVariable String resource, @PathVariable String id);
 
-    @RequestMapping(value = "/{resource}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{resource}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
     public String getAll(@PathVariable String resource);
 
     @RequestMapping(value = "/{resource}", method = RequestMethod.POST, headers = "content-type=application/fhir+json")
