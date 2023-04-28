@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,7 +29,10 @@ mybatis-plus:
       logic-delete-value: 0
 fhir:
   name: fhir-server
-  url: https://smilecdr-uom2.comp90082-2023.vsbox.dev/fhir
+#  url: https://smilecdr-uom2.comp90082-2023.vsbox.dev/fhir
   username: uom2-admin
   password: vojumosibaz#37
-  test_url: http://localhost:8084/fhir
+  url: http://localhost:8084/fhir
+
+common:
+  basepath: /user_file/
