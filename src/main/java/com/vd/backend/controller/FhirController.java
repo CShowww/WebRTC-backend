@@ -121,8 +121,6 @@ public class FhirController {
         return r;
     }
 
-
-
     /**
      *  health summary (tmp)
      */
@@ -178,8 +176,32 @@ public class FhirController {
         String weightObservation = "", heightObservation = "";
 
         // parse json
-        File f = ResourceUtils.getFile("classpath:template/Observation.json");
-        JSONObject templates = JSON.parseObject(FileUtils.readFileToString(f));
+//        File f = ResourceUtils.getFile("classpath:template/Observation.json");
+//        JSONObject templates = JSON.parseObject(FileUtils.readFileToString(f));
+
+        JSONObject templates = JSON.parseObject("{\n" +
+                "  \"resourceType\": \"Observation\",\n" +
+                "  \"status\": \"final\",\n" +
+                "  \"code\": {\n" +
+                "    \"coding\": [\n" +
+                "      {\n" +
+                "        \"system\": \"http://loinc.org\",\n" +
+                "        \"code\": \"29463-7\",\n" +
+                "        \"display\": \"Body-Weight\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"subject\": {\n" +
+                "    \"reference\": \"Patient/1326\"\n" +
+                "  },\n" +
+                "\n" +
+                "  \"effectiveDateTime\": \"2016-03-28\",\n" +
+                "  \"valueQuantity\": {\n" +
+                "    \"value\": 145,\n" +
+                "    \"unit\": \"lbs\"\n" +
+                "  }\n" +
+                "}");
+
         JSONObject jsData = JSON.parseObject(data);
 
         log.info("templates: " + templates.toString());
