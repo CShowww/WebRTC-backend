@@ -86,7 +86,7 @@ public class UserController {
             // file transfer
             try {
                 file.transferTo(new File(targetPath.getPath() + "/" + newName));
-                log.info("file transfer to " + targetPath);
+                log.info("file transfer to " + targetPath.getPath() + "/" + newName);
             } catch (IOException e) {
                 e.printStackTrace();
 
@@ -110,6 +110,8 @@ public class UserController {
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
         File newestFile = getNewestFile(folderPath);
+
+        log.info(newestFile.getPath());
         if (newestFile == null) {
             return ResponseEntity.notFound().build();
         }
@@ -125,18 +127,23 @@ public class UserController {
     }
 
     private File getNewestFile(String folderPath) {
+        log.info("path: ", folderPath);
         File folder = new File(folderPath);
         if (!folder.isDirectory()) {
             return null;
         }
-        return Arrays.stream(folder.listFiles())
-                .filter(file -> file.isFile())
-                .max(Comparator.comparingLong(file -> file.lastModified()))
-                .orElse(null);
+
+        return folder.listFiles()[0];
     }
 
     private String getFileContentType(File file) throws IOException {
         return Files.probeContentType(file.toPath());
+    }
+
+    @PostMapping("/hi")
+    public R<String> upload() {
+        log.info("hi");
+        return R.success("hi");
     }
 
 }
