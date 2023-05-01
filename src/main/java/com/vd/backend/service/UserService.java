@@ -1,7 +1,7 @@
-package com.example.webrtcbackend.service;
+package com.vd.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.webrtcbackend.entity.bo.User;
+import com.vd.backend.entity.bo.User;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**

@@ -1,15 +1,11 @@
-package com.example.webrtcbackend.interceptor;
+package com.vd.backend.interceptor;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.Claim;
-import com.example.webrtcbackend.entity.bo.User;
-import com.example.webrtcbackend.service.UserService;
-import com.example.webrtcbackend.token.PassToken;
-import com.example.webrtcbackend.token.UserLoginToken;
+import com.vd.backend.entity.bo.User;
+import com.vd.backend.service.UserService;
+import com.vd.backend.token.PassToken;
+import com.vd.backend.token.UserLoginToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +15,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 public class AuthenticationInterceptor implements HandlerInterceptor {
     @Autowired
@@ -28,7 +22,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
-        String token = httpServletRequest.getHeader("token");// 从 http 请求头中取出 token
+        String token = httpServletRequest.getHeader("Authorization");// 从 http 请求头中取出 token
         // 如果不是映射到方法直接通过
         if (!(object instanceof HandlerMethod)) {
             return true;

@@ -1,7 +1,7 @@
-package com.example.webrtcbackend.mapper;
+package com.vd.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.webrtcbackend.entity.bo.User;
+import com.vd.backend.entity.bo.User;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

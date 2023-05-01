@@ -1,4 +1,4 @@
-package com.example.webrtcbackend.common;
+package com.vd.backend.common;
 
 import lombok.Data;
 

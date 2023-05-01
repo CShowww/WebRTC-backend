@@ -1,7 +1,7 @@
-package com.example.webrtcbackend.controller;
+package com.vd.backend.controller;
 
 
-import com.example.webrtcbackend.common.R;
+import com.vd.backend.common.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

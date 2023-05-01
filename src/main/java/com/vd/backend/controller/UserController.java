@@ -1,21 +1,28 @@
-package com.example.webrtcbackend.controller;
+package com.vd.backend.controller;
 
 
-import com.example.webrtcbackend.common.R;
-import com.example.webrtcbackend.service.UserService;
+import com.vd.backend.common.R;
+import com.vd.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.system.ApplicationHome;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Comparator;
 
 @Slf4j
 @RestController
@@ -49,11 +56,11 @@ public class UserController {
 
     /**
      * 文件上传服务 pdf?
-     * @param file
+     * @param files
      * @return
      */
-    @PostMapping("/upload")
-    public R<String> upload(MultipartFile[] files, @RequestParam("category") String category, HttpServletRequest request) {
+    @PostMapping("/upload/{id}")
+    public R<String> upload(MultipartFile[] files, @RequestParam("category") String category, @PathVariable String id) {
         log.info("user upload {} file(s)", files.length);
 
         // rename by timestamp
@@ -71,7 +78,7 @@ public class UserController {
 
             String newName = fileNameSplit[0] + timestamp + "." + fileNameSplit[1];
 
-            File targetPath = new File(home.getDir().getPath() + basePath + request.getParameter("userId") + "/" + category + "/");
+            File targetPath = new File(home.getDir().getPath() + basePath + id + "/" + category + "/");
 
             if (!targetPath.exists()) {
                 targetPath.mkdirs();
@@ -98,10 +105,38 @@ public class UserController {
     /**
      * 文件下载服务
      */
-    @GetMapping("/download")
-    public void download(HttpServletResponse response, @RequestParam("fileType") String fileType) {
-        log.info("hi");
+    @GetMapping("/download/{id}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category) throws IOException {
+        String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
+        File newestFile = getNewestFile(folderPath);
+        if (newestFile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        byte[] fileContent = Files.readAllBytes(newestFile.toPath());
+        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType(getFileContentType(newestFile)));
+        headers.setContentDisposition(ContentDisposition.builder("attachment")
+                .filename(newestFile.getName())
+                .build());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(fileContent);
+    }
+
+    private File getNewestFile(String folderPath) {
+        File folder = new File(folderPath);
+        if (!folder.isDirectory()) {
+            return null;
+        }
+        return Arrays.stream(folder.listFiles())
+                .filter(file -> file.isFile())
+                .max(Comparator.comparingLong(file -> file.lastModified()))
+                .orElse(null);
+    }
+
+    private String getFileContentType(File file) throws IOException {
+        return Files.probeContentType(file.toPath());
     }
 
 }

@@ -1,11 +1,9 @@
-package com.example.webrtcbackend.entity.bo;
+package com.vd.backend.entity.bo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -32,6 +30,7 @@ public class User implements Serializable {
      *
      */
     private Date expiredTime;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

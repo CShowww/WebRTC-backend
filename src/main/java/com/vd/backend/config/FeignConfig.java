@@ -1,4 +1,4 @@
-package com.example.webrtcbackend.config;
+package com.vd.backend.config;
 
 import feign.Logger;
 import feign.auth.BasicAuthRequestInterceptor;

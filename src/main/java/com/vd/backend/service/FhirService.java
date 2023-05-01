@@ -1,13 +1,10 @@
-package com.example.webrtcbackend.service;
+package com.vd.backend.service;
 
-import com.example.webrtcbackend.config.FeignConfig;
+import com.vd.backend.config.FeignConfig;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
         value="${fhir.name}",
@@ -32,4 +29,8 @@ public interface FhirService {
 
     @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.DELETE)
     public String delete(@PathVariable String resource, @PathVariable String id);
+
+    @RequestMapping(value="/Observation")
+    public String getBySubject(@RequestParam("subject") String subject);
+
 }

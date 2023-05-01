@@ -1,4 +1,4 @@
-package com.example.webrtcbackend;
+package com.vd.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
