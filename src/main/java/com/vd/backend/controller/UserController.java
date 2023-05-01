@@ -1,6 +1,8 @@
 package com.vd.backend.controller;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +63,8 @@ public class UserController {
      * @param files
      * @return
      */
+
+
     @PostMapping("/upload/{id}")
     public R<String> upload(MultipartFile[] files, @RequestParam("category") String category, @PathVariable String id) {
         log.info("user upload {} file(s)", files.length);
@@ -104,17 +108,26 @@ public class UserController {
 
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
-        List<String> fileNames = new ArrayList<>();
         File folder = new File(folderPath);
+        JSONArray ans = new JSONArray();
         if (folder.isDirectory()) {
+
+
             File[] files = folder.listFiles();
             for (File file : files) {
+                JSONObject jsonObject = new JSONObject();
+
                 if (file.isFile()) {
-                    fileNames.add(file.getName());
+                    log.info(file.toString());
+                    jsonObject.put("fieldName", file.getName());
                 }
+                ans.add(jsonObject);
             }
+
+
+
         }
-        return R.success(fileNames.toString());
+        return R.success(ans.toString());
     }
 
 
@@ -127,6 +140,7 @@ public class UserController {
     /**
      * 文件下载服务
      */
+
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";

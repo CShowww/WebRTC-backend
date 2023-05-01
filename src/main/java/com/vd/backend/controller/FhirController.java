@@ -75,15 +75,18 @@ public class FhirController {
         for (int i = 0; i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();
 
-            String family = "", phone = "";
-            JSONArray given = null;
+            String family = "", phone = "", given = "";
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
             JSONObject name = res.getJSONArray("name")
                     .getJSONObject(0);
+            String id = res.getString("id");
+
 
             family = name.getString("family");
-            given = name.getJSONArray("given");
+            for (Object s: name.getJSONArray("given")) {
+                given += (String) s + " ";
+            }
 
             JSONArray telecom = res.getJSONArray("telecom");
             for (int j = 0; j < telecom.size(); j++) {
@@ -94,8 +97,10 @@ public class FhirController {
                 }
             }
             jsonObject.put("family", family);
-            jsonObject.put("given", given.toString());
+            jsonObject.put("given", given);
             jsonObject.put("contact", phone);
+            jsonObject.put("id", id);
+
 
             ans.add(jsonObject);
         }
