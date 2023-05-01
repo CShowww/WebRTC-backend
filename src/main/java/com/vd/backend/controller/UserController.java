@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
+
 
 @Slf4j
 @RestController
@@ -97,6 +99,26 @@ public class UserController {
         return R.success("Upload success");
     }
 
+    @GetMapping("/files/{id}")
+    public R<String> getFiles(@PathVariable String id, @RequestParam("category") String category) {
+
+        String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
+
+        List<String> fileNames = new ArrayList<>();
+        File folder = new File(folderPath);
+        if (folder.isDirectory()) {
+            File[] files = folder.listFiles();
+            for (File file : files) {
+                if (file.isFile()) {
+                    fileNames.add(file.getName());
+                }
+            }
+        }
+        return R.success(fileNames.toString());
+    }
+
+
+
 
 
     // TODO, 下载，返回最晚创建的文件
@@ -106,12 +128,15 @@ public class UserController {
      * 文件下载服务
      */
     @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category) throws IOException {
+    public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
-        File newestFile = getNewestFile(folderPath);
+//        File newestFile = getNewestFile(folderPath);
+
+        File newestFile = new File(folderPath + filename);
 
         log.info(newestFile.getPath());
+
         if (newestFile == null) {
             return ResponseEntity.notFound().build();
         }

@@ -67,7 +67,41 @@ public class FhirController {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        return R.success(rel);
+        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
+
+        JSONArray ans = new JSONArray();
+
+
+        for (int i = 0; i < entry.size(); i++) {
+            JSONObject jsonObject = new JSONObject();
+
+            String family = "", phone = "";
+            JSONArray given = null;
+
+            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+            JSONObject name = res.getJSONArray("name")
+                    .getJSONObject(0);
+
+            family = name.getString("family");
+            given = name.getJSONArray("given");
+
+            JSONArray telecom = res.getJSONArray("telecom");
+            for (int j = 0; j < telecom.size(); j++) {
+                JSONObject t = telecom.getJSONObject(j);
+                String system = t.getString("system");
+                if ("phone".equals(system)) {
+                    phone = t.getString("value");
+                }
+            }
+            jsonObject.put("family", family);
+            jsonObject.put("given", given.toString());
+            jsonObject.put("contact", phone);
+
+            ans.add(jsonObject);
+        }
+
+
+        return R.success(ans.toString());
     }
 
 
