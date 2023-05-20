@@ -7,6 +7,11 @@ import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
     @Override
@@ -18,19 +23,27 @@ public class AppointmentServiceImpl implements AppointmentService {
     public JSONObject String2Json(Appointment appointment) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("resourceType", "Appointment");
-        jsonObject.put("start", appointment.getStartTime());
-        jsonObject.put("end", appointment.getEndTime());
+        try{
+            DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+            jsonObject.put("start", format.parse(appointment.getStartTime()));
+            jsonObject.put("end", format.parse(appointment.getEndTime()));
+        }catch (ParseException e){
+            System.out.println(e.getMessage());
+        }
         jsonObject.put("status", appointment.getStatus());
 
         JSONArray participant = new JSONArray();
 
         JSONObject practitionerJson = new JSONObject();
-        JSONObject practitionerType = JSON.parseObject("\"type\":\n" +
-                "            [{\n" +
-                "\t\"coding\": [{\n" +
-                "\t\t\"system\": \"http://www.hl7.org/sitemap.cfm\",\n" +
-                "\t\t\"code\": \"ATND\"\n" +
-                "\t}]");
+        JSONArray practitionerType = new JSONArray();
+        practitionerType.add(JSON.parseObject("""
+                {
+                \t"coding": [{
+                \t\t"system": "http://www.hl7.org/sitemap.cfm",
+                \t\t"code": "ATND"
+                \t}]
+                }]
+                }"""));
         JSONObject practitionerActor = new JSONObject();
         practitionerActor.put("reference", "Practitioner/" + appointment.getPractitionerId());
         practitionerActor.put("display", appointment.getPractitionerName());
@@ -41,9 +54,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         JSONObject patientJson = new JSONObject();
         JSONObject patientActor = new JSONObject();
-        patientActor.put("reference", "Practitioner/" + appointment.getPatientId());
+        patientActor.put("reference", "Patient/" + appointment.getPatientId());
         patientActor.put("display", appointment.getPatientName());
-        patientJson.put("actor", practitionerActor);
+        patientJson.put("actor", patientActor);
         patientJson.put("required", "required");
         patientJson.put("status", "accepted");
 
@@ -52,6 +65,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         jsonObject.put("participant", participant);
 
+        System.out.println(jsonObject);
         return jsonObject;
     }
 }

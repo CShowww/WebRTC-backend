@@ -13,7 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 @Slf4j
 @RestController
@@ -101,6 +105,7 @@ public class AppointmentController {
         log.info("Update appointment {}", id);
         String rel = "";
         JSONObject data = appointmentService.String2Json(appointment);
+        data.put("id", id);
         try {
             rel = fhirService.update(resource, id, data.toString());
         } catch (Exception e) {
@@ -131,8 +136,15 @@ public class AppointmentController {
     public R<String> add(@PathVariable String id, @RequestBody Appointment appointment) {
         log.info("Post {}", resource);
 
-        Date start = appointment.getStartTime();
-        Date end = appointment.getEndTime();
+        Date start = null, end = null;
+        try{
+            DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+            start = format.parse(appointment.getStartTime());
+            end = format.parse(appointment.getEndTime());
+        }catch (ParseException e){
+            System.out.println(e.getMessage());
+        }
+
 
         String rel = "";
         try {
