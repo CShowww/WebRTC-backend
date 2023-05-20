@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
+import com.vd.backend.entity.vo.Appointment;
+import com.vd.backend.service.AppointmentService;
 import com.vd.backend.service.FhirService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,9 @@ public class AppointmentController {
 
     @Autowired
     private FhirService fhirService;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     String resource = "Appointment";
 
@@ -92,11 +97,12 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}")
-    public R<String> update(@PathVariable String id, @RequestBody String data) {
+    public R<String> update(@PathVariable String id, @RequestBody Appointment appointment) {
         log.info("Update appointment {}", id);
         String rel = "";
+        JSONObject data = appointmentService.String2Json(appointment);
         try {
-            rel = fhirService.update(resource, id, data);
+            rel = fhirService.update(resource, id, data.toString());
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -122,12 +128,11 @@ public class AppointmentController {
 
     @PostMapping("/{id}")
     @Transaction
-    public R<String> add(@PathVariable String id, @RequestBody String data) {
+    public R<String> add(@PathVariable String id, @RequestBody Appointment appointment) {
         log.info("Post {}", resource);
 
-        JSONObject appointmentJson = JSON.parseObject(data);
-        Date start = appointmentJson.getDate("start");
-        Date end = appointmentJson.getDate("end");
+        Date start = appointment.getStartTime();
+        Date end = appointment.getEndTime();
 
         String rel = "";
         try {
@@ -155,9 +160,10 @@ public class AppointmentController {
             }
         }
 
+        JSONObject data = appointmentService.String2Json(appointment);
 
         try {
-            rel = fhirService.add(resource, data);
+            rel = fhirService.add(resource, data.toString());
         } catch (Exception e) {
             e.printStackTrace();
 

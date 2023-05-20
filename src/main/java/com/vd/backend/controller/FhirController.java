@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.hl7.fhir.utilities.json.model.JsonArray;
