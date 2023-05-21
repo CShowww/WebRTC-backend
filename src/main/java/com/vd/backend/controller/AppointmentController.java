@@ -35,6 +35,12 @@ public class AppointmentController {
 
     String resource = "Appointment";
 
+    /**
+     * Get Fhir Appointment via ID
+     * @param id
+     * @param request
+     * @return
+     */
     @GetMapping("/{id}")
     public R<String> get(@PathVariable String id, HttpServletRequest request) {
 
@@ -52,6 +58,10 @@ public class AppointmentController {
         return R.success(appointmentService.Json2String(JSONObject.parseObject(rel)));
     }
 
+    /**
+     * List all appointment
+     * @return
+     */
     @GetMapping("/getAll")
     public R<String> getAll() {
         log.info("Get all appointments");
@@ -74,6 +84,11 @@ public class AppointmentController {
         return R.success(ans.toString());
     }
 
+    /**
+     * Get all appointments related to a practitioner
+     * @param id
+     * @return
+     */
     @GetMapping("/getById/{id}")
     public R<String> getById(@PathVariable String id) {
         log.info("Get all appointments related to practitioner {}", id);
@@ -95,7 +110,6 @@ public class AppointmentController {
                 ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
             }
         }
-
 
         return R.success(ans.toString());
     }
@@ -141,7 +155,6 @@ public class AppointmentController {
         LocalDateTime start = null, end = null;
         start = LocalDateTime.parse(appointment.getStartTime(), formatter);
         end = LocalDateTime.parse(appointment.getEndTime(), formatter);
-
 
         String rel = "";
         try {
