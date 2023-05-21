@@ -13,5 +13,6 @@ public interface UserService extends IService<User> {
 
     public User findUserById(String userId);
 
-    public void saveToken(HttpServletRequest httpServletRequest);
+    public String saveToken(HttpServletRequest httpServletRequest, String data);
+
 }

@@ -46,16 +46,18 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public R<String> login(HttpServletRequest httpServletRequest) {
+    public R<String> login(@RequestBody String data, HttpServletRequest httpServletRequest ) {
         log.info("Save Token");
 
-        userService.saveToken(httpServletRequest);
+        JSONObject jsonObject = JSONObject.parseObject(data);
 
-        String userId = httpServletRequest.getParameter("userId");
+        String res = userService.saveToken(httpServletRequest, data);
 
-        httpServletRequest.getSession().setAttribute("userId", userId);
+        if(res==null){
+            return R.error("Create Resource fail!");
+        }
 
-        return R.success();
+        return R.success(res);
     }
 
     /**
