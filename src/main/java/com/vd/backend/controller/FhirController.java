@@ -1,21 +1,13 @@
 package com.vd.backend.controller;
-
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.hl7.fhir.utilities.json.model.JsonArray;
-import org.hl7.fhir.utilities.json.model.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -23,10 +15,10 @@ import java.util.stream.IntStream;
 import com.alibaba.fastjson.JSON;
 
 
-
 /**
  *  Get raw fhir data
  */
+
 @Slf4j
 @RestController
 @RequestMapping("/fhir")
@@ -100,6 +92,7 @@ public class FhirController {
             jsonObject.put("given", given);
             jsonObject.put("contact", phone);
             jsonObject.put("id", id);
+
             ans.add(jsonObject);
         }
 
@@ -173,7 +166,6 @@ public class FhirController {
 
         JSONObject healthDataCSV = new JSONObject();
 
-
         JSONArray weightArray = new JSONArray();
         JSONArray heightArray = new JSONArray();
 
@@ -210,10 +202,6 @@ public class FhirController {
     @PostMapping("/observation/{resource}/{id}")
     public R<String> addObservation(@PathVariable String resource, @PathVariable String id, @RequestBody String data) throws IOException {
         String weightObservation = "", heightObservation = "";
-
-        // parse json
-//        File f = ResourceUtils.getFile("classpath:template/Observation.json");
-//        JSONObject templates = JSON.parseObject(FileUtils.readFileToString(f));
 
         JSONObject templates = JSON.parseObject("{\n" +
                 "  \"resourceType\": \"Observation\",\n" +
@@ -286,12 +274,9 @@ public class FhirController {
         return R.success("test");
     }
 
-
     /**
      *  Util
      */
-
-
     private String getFhirResource(String uri){
         String[] path = uri.split("/");
         int index = IntStream.range(0, path.length)
@@ -299,7 +284,7 @@ public class FhirController {
                 .findFirst()
                 .orElse(-1) - 1;
         return path[index];
-    }w
+    }
 
 }
 
