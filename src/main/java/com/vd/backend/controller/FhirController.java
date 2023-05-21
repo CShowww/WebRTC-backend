@@ -2,7 +2,7 @@ package com.vd.backend.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
-import com.vd.backend.service.FhirService;
+import com.vd.backend.service.RemoteFhirService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import com.alibaba.fastjson.JSON;
 @CrossOrigin
 public class FhirController {
     @Autowired
-    private FhirService fhirService;
+    private RemoteFhirService remoteFhirService;
 
     /**
      *  profiles: return fhir resources
@@ -36,7 +36,7 @@ public class FhirController {
 
         String rel = "";
         try{
-            rel = fhirService.get(resource, id);
+            rel = remoteFhirService.get(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -52,7 +52,7 @@ public class FhirController {
         String rel = "";
 
         try {
-            rel = fhirService.getAll(resource);
+            rel = remoteFhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -104,7 +104,7 @@ public class FhirController {
         log.info("Update {}/{}", resource, id);
         String rel = "";
         try {
-            rel = fhirService.update(resource, id, data);
+            rel = remoteFhirService.update(resource, id, data);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -118,7 +118,7 @@ public class FhirController {
         log.info("Delete {}/{}", resource, id);
         String rel = "";
         try {
-            rel = fhirService.delete(resource, id);
+            rel = remoteFhirService.delete(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -133,7 +133,7 @@ public class FhirController {
         log.info("Post {}", resource);
         String rel = "";
         try {
-            rel = fhirService.add(resource, data);
+            rel = remoteFhirService.add(resource, data);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -157,7 +157,7 @@ public class FhirController {
     public R<String> getSummary(@PathVariable String resource, @PathVariable String id) {
 
         // 1. gather all observation
-        String bundle = fhirService.getBySubject("Patient/"+id);
+        String bundle = remoteFhirService.getBySubject("Patient/"+id);
 
         // 2. filter Observation
         JSONArray entries = JSON.parseObject(bundle).getJSONArray("entry");
@@ -257,8 +257,8 @@ public class FhirController {
         // 3. send fhir request
         String[] rels = new String[2];
         try {
-            rels[0] = fhirService.add("Observation", weightObservation);
-            rels[1] = fhirService.add("Observation", heightObservation);
+            rels[0] = remoteFhirService.add("Observation", weightObservation);
+            rels[1] = remoteFhirService.add("Observation", heightObservation);
         } catch (Exception e) {
             e.printStackTrace();
 

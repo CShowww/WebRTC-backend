@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/common")
 @Slf4j
-public class CommonController {
+public class TestController {
 
     /**
      * 文件上传

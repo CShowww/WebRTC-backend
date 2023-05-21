@@ -39,3 +39,4 @@ fhir:
 
 common:
   basepath: /user_file/
+  cache_capacity: 50
