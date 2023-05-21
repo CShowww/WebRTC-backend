@@ -1,11 +1,13 @@
 package com.vd.backend.service;
 
+import java.util.concurrent.ExecutionException;
+
 public interface AsynFhirService {
-    void add();
+    String add(String resource, String id) throws ExecutionException, InterruptedException;
 
-    void delete();
+    String delete();
 
-    void update();
+    String update();
 
-    void get();
+    String get();
 }

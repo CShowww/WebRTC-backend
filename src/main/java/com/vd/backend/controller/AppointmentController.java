@@ -38,9 +38,7 @@ public class AppointmentController {
      */
     @GetMapping("/{id}")
     public R<String> get(@PathVariable String id, HttpServletRequest request) {
-
         log.info("Get appointment {}", id);
-
         String rel = "";
         try{
             rel = remoteFhirService.get(resource, id);
@@ -49,7 +47,6 @@ public class AppointmentController {
 
             return R.error(e.getMessage());
         }
-
         return R.success(appointmentService.Json2String(JSONObject.parseObject(rel)));
     }
 
@@ -144,7 +141,6 @@ public class AppointmentController {
     @Transaction
     public R<String> add(@RequestBody Appointment appointment) {
         log.info("Post {}", resource);
-
 
         String pattern = "yyyy-MM-dd HH:mm:ss";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);

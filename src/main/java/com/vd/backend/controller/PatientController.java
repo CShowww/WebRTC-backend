@@ -17,6 +17,4 @@ public class PatientController {
     @Autowired
     PatientService patientService;
 
-
-
 }

@@ -112,6 +112,7 @@ public class FhirController {
         }
         return R.success(rel);
     }
+    
 
     @DeleteMapping("/profiles/{resource}/{id}")
     public R<String> delete(@PathVariable String resource, @PathVariable String id) {
