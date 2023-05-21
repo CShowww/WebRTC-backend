@@ -16,7 +16,11 @@ import java.util.Locale;
 public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public String Json2String(JSONObject jsonObject) {
-        return null;
+        String status = jsonObject.getString("status");
+        String start = jsonObject.getString("start");
+        String end = jsonObject.getString("end");
+        String actor = jsonObject.getString("");
+        return new String();
     }
 
     @Override
@@ -24,7 +28,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("resourceType", "Appointment");
         try{
-            DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
             jsonObject.put("start", format.parse(appointment.getStartTime()));
             jsonObject.put("end", format.parse(appointment.getEndTime()));
         }catch (ParseException e){

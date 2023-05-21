@@ -136,9 +136,9 @@ public class AppointmentController {
     public R<String> add(@PathVariable String id, @RequestBody Appointment appointment) {
         log.info("Post {}", resource);
 
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         Date start = null, end = null;
         try{
-            DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
             start = format.parse(appointment.getStartTime());
             end = format.parse(appointment.getEndTime());
         }catch (ParseException e){
@@ -160,13 +160,20 @@ public class AppointmentController {
             for (int i = 0; i < entry.size(); i++) {
 
                 JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                Date bookStart = res.getDate("start");
-                Date bookEnd = res.getDate("end");
+                Date bookStart = null;
+                Date bookEnd = null;
+                try {
+                    bookStart = format.parse(String.valueOf(res.getDate("start")));
+                    bookEnd = format.parse(String.valueOf(res.getDate("end")));
+                }catch (ParseException e){
+                    System.out.println(e.getMessage());
+                }
+
                 if (start.after(bookStart) && start.before(bookEnd)) {
                     return R.error("Current time slot is not available");
                 } else if (end.after(bookStart) && end.before(bookEnd)) {
                     return R.error("Current time slot is not available");
-                } else if (start.compareTo(bookStart)<=0 && end.compareTo(bookEnd)>=0) {
+                } else if (start.compareTo(bookStart) <= 0 && end.compareTo(bookEnd) >= 0) {
                     return R.error("Current time slot is not available");
                 }
             }
