@@ -56,6 +56,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = this.getById(id);
 
         if(user==null){
+            user = new User();
             user.setToken(signature);
             user.setExpiredTime(expiresAt);
             user.setId(id);
