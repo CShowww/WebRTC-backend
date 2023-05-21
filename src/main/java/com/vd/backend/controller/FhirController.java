@@ -30,10 +30,8 @@ public class FhirController {
     /**
      *  profiles: return fhir resources
      */
-
     @GetMapping("/profiles/{resource}/{id}")
     public R<String> get(@PathVariable String id, @PathVariable String resource, HttpServletRequest request) {
-
         log.info("Get {}/{}", resource, id);
 
         String rel = "";
@@ -44,7 +42,6 @@ public class FhirController {
 
             return R.error(e.getMessage());
         }
-
         return R.success(rel);
     }
 
@@ -53,16 +50,17 @@ public class FhirController {
     public R<String> getAll(@PathVariable String resource) {
         log.info("Get all {}", resource);
         String rel = "";
+
         try {
             rel = fhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
+
         JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
         JSONArray ans = new JSONArray();
-
 
         for (int i = 0; i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();

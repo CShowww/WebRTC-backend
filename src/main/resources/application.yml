@@ -1,7 +1,6 @@
 server:
   port: 8080
 
-
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -30,6 +29,7 @@ mybatis-plus:
       logic-not-delete-value: 1
       # 删除后
       logic-delete-value: 0
+
 fhir:
   name: fhir-server
   url: https://smilecdr-uom2.comp90082-2023.vsbox.dev/fhir
