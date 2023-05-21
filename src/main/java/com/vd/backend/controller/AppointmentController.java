@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 
@@ -53,7 +55,7 @@ public class AppointmentController {
             return R.error(e.getMessage());
         }
 
-        return R.success(rel);
+        return R.success(appointmentService.Json2String(JSONObject.parseObject(rel)));
     }
 
     /**
@@ -76,8 +78,7 @@ public class AppointmentController {
         for (int i = 0; i < entry.size(); i++) {
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-            res.remove("meta");
-            ans.add(res);
+            ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
         }
 
         return R.success(ans.toString());
@@ -106,8 +107,7 @@ public class AppointmentController {
             for (int i = 0; i < entry.size(); i++) {
 
                 JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                res.remove("meta");
-                ans.add(res);
+                ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
             }
         }
 
@@ -145,23 +145,21 @@ public class AppointmentController {
         return R.success(rel);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping
     @Transaction
-    public R<String> add(@PathVariable String id, @RequestBody Appointment appointment) {
+    public R<String> add(@RequestBody Appointment appointment) {
         log.info("Post {}", resource);
 
-        Date start = null, end = null;
-        try{
-            DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
-            start = format.parse(appointment.getStartTime());
-            end = format.parse(appointment.getEndTime());
-        }catch (ParseException e){
-            System.out.println(e.getMessage());
-        }
+
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        LocalDateTime start = null, end = null;
+        start = LocalDateTime.parse(appointment.getStartTime(), formatter);
+        end = LocalDateTime.parse(appointment.getEndTime(), formatter);
 
         String rel = "";
         try {
-            rel = fhirService.getById(resource, id);
+            rel = fhirService.getById(resource, appointment.getPractitionerId());
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -173,13 +171,16 @@ public class AppointmentController {
             for (int i = 0; i < entry.size(); i++) {
 
                 JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                Date bookStart = res.getDate("start");
-                Date bookEnd = res.getDate("end");
-                if (start.after(bookStart) && start.before(bookEnd)) {
+                pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+                formatter = DateTimeFormatter.ofPattern(pattern);
+                LocalDateTime bookStart = LocalDateTime.parse(res.getString("start"), formatter);
+                LocalDateTime bookEnd = LocalDateTime.parse(res.getString("start"), formatter);
+
+                if (start.isAfter(bookStart) && start.isBefore(bookEnd)) {
                     return R.error("Current time slot is not available");
-                } else if (end.after(bookStart) && end.before(bookEnd)) {
+                } else if (end.isAfter(bookStart) && end.isBefore(bookEnd)) {
                     return R.error("Current time slot is not available");
-                } else if (start.compareTo(bookStart)<=0 && end.compareTo(bookEnd)>=0) {
+                } else if (start.compareTo(bookStart) <= 0 && end.compareTo(bookEnd) >= 0) {
                     return R.error("Current time slot is not available");
                 }
             }
