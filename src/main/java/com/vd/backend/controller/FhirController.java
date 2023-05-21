@@ -100,8 +100,6 @@ public class FhirController {
             jsonObject.put("given", given);
             jsonObject.put("contact", phone);
             jsonObject.put("id", id);
-
-
             ans.add(jsonObject);
         }
 
@@ -123,7 +121,6 @@ public class FhirController {
         }
         return R.success(rel);
     }
-
 
     @DeleteMapping("/profiles/{resource}/{id}")
     public R<String> delete(@PathVariable String resource, @PathVariable String id) {
@@ -302,7 +299,7 @@ public class FhirController {
                 .findFirst()
                 .orElse(-1) - 1;
         return path[index];
-    }
+    }w
 
 }
 

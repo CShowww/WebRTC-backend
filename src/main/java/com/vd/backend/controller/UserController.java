@@ -1,19 +1,16 @@
 package com.vd.backend.controller;
 
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,9 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 @Slf4j
@@ -33,7 +27,6 @@ import java.util.List;
 @RequestMapping("/user")
 @CrossOrigin
 public class UserController {
-
     @Autowired
     UserService userService;
 
@@ -63,8 +56,6 @@ public class UserController {
      * @param files
      * @return
      */
-
-
     @PostMapping("/upload/{id}")
     public R<String> upload(MultipartFile[] files, @RequestParam("category") String category, @PathVariable String id) {
         log.info("user upload {} file(s)", files.length);
@@ -112,7 +103,6 @@ public class UserController {
         JSONArray ans = new JSONArray();
         if (folder.isDirectory()) {
 
-
             File[] files = folder.listFiles();
             for (File file : files) {
                 JSONObject jsonObject = new JSONObject();
@@ -124,13 +114,9 @@ public class UserController {
                 ans.add(jsonObject);
             }
 
-
-
         }
         return R.success(ans.toString());
     }
-
-
 
 
 
@@ -140,13 +126,10 @@ public class UserController {
     /**
      * 文件下载服务
      */
-
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
-
 //        File newestFile = getNewestFile(folderPath);
-
         File newestFile = new File(folderPath + filename);
 
         log.info(newestFile.getPath());
@@ -171,7 +154,6 @@ public class UserController {
         if (!folder.isDirectory()) {
             return null;
         }
-
         return folder.listFiles()[0];
     }
 
@@ -184,5 +166,4 @@ public class UserController {
         log.info("hi");
         return R.success("hi");
     }
-
 }

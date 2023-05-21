@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class CommonController {
 
-
     /**
      * 文件上传
      *
@@ -33,6 +32,5 @@ public class CommonController {
 
         return R.success("any");
     }
-
 
 }
