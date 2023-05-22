@@ -81,9 +81,11 @@ public class FhirController {
 
             if (nameArray != null) {
                 JSONObject name = nameArray.getJSONObject(0);
-                family = name.getString("family");
-                for (Object s: name.getJSONArray("given")) {
-                    given += (String) s + " ";
+                if(name!=null){
+                    family = name.getString("family");
+                    for (Object s: name.getJSONArray("given")) {
+                        given += (String) s + " ";
+                    }
                 }
             }
             // Telecom
