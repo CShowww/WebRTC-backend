@@ -3,6 +3,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
+import io.micrometer.observation.Observation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
@@ -172,16 +175,41 @@ public class FhirController {
         // 2. filter Observation
         JSONArray entries = JSON.parseObject(bundle).getJSONArray("entry");
 
-
         JSONArray healthSummary = new JSONArray();
+
         if (entries != null) {
             log.info(entries.toString());
         }
 
+        // 3. gather time
+        Set<String> timeSet = new HashSet<>();
 
         for (int i = 0; entries != null && i < entries.size(); i++) {
 
+            //Get res and type
+            JSONObject res = (JSONObject) entries.getJSONObject(i)
+                    .getJSONObject("resource");
+
+            String time = res.getString("effectiveDateTime");
+
+            timeSet.add(time);
+        }
+
+        for (String t : timeSet) {
             JSONObject observation = new JSONObject();
+            observation.put("effectiveDateTime", t);
+            observation.put("height", 0.0);
+            observation.put("weight", 0.0);
+            observation.put("blood", 0.0);
+            observation.put("heart", 0.0);
+
+            healthSummary.add(observation);
+        }
+
+        log.info(timeSet.toString() + " " + healthSummary.toString());
+
+        // 4. update data
+        for(int i = 0; entries != null && i < entries.size(); i++) {
 
             //Get res and type
             JSONObject res = (JSONObject) entries.getJSONObject(i)
@@ -193,52 +221,39 @@ public class FhirController {
 
             String time = res.getString("effectiveDateTime");
 
-            Optional<JSONObject> optionalJsonObject = healthSummary.stream()
-                    .filter(obj -> {
-                        JSONObject jsonObject = (JSONObject) obj;
-                        String effectiveDateTime = jsonObject.getString("effectiveDateTime");
-                        return time.equals(effectiveDateTime);
-                    })
-                    .map(obj -> (JSONObject) obj)
-                    .findFirst();
+            // find object related to time and update
+            for (int j = 0; j < healthSummary.size(); j++) {
+                JSONObject observation = healthSummary.getJSONObject(j);
 
-            if (optionalJsonObject.isPresent()) {
-                observation = optionalJsonObject.get();
-            } else {
-                observation.put("effectiveDateTime", time);
-                observation.put("weight", 0.0);
-                observation.put("height", 0.0);
-                observation.put("blood", 0.0);
-                observation.put("heart", 0.0);
+                if (time.equals(observation.getString("effectiveDateTime"))) {
+
+                    if (type.get("display").equals("Body-Weight")) {
+
+                        observation.put("weight", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Height")) {
+
+                        observation.put("height", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Blood")) {
+
+                        observation.put("blood", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Heart")) {
+
+                        observation.put("heart", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    }
+
+                    log.info("set: {}, {}, {}", j, observation, healthSummary);
+                    healthSummary.set(j, observation);
+
+                    break;
+                }
             }
-
-            observation.put("effectiveDateTime", time);
-
-
-
-            if (type.get("display").equals("Body-Weight")) {
-
-                observation.put("weight", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Height")) {
-
-                observation.put("height", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Blood")) {
-
-                observation.put("blood", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Heart")) {
-
-                observation.put("heart", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            }
-            log.info("observation: {}", observation);
-
-            healthSummary.add(observation);
         }
 
-
+        log.info(healthSummary.toString());
         return R.success(healthSummary.toString());
     }
 
