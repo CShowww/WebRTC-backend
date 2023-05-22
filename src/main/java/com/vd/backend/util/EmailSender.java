@@ -24,8 +24,8 @@ public class EmailSender {
 
     @Autowired
     private FhirService fhirService;
-    // subject  = "测试邮件";
-    // content = "这是一封测试邮件。"
+    // subject  = "主题";
+    // content = "内容。"
     // recipient = "recipient@example.com"; // 接收方邮箱地址
 
     public void init(){
@@ -55,7 +55,6 @@ public class EmailSender {
         log.info("Data from front end : {}",data);
         init();
 
-
         if(connector.getType().equals("Add")){
             content = "One patient made an appointment!";
             send2Patient(connector.getPatientId(),"Patient", content);
@@ -69,8 +68,6 @@ public class EmailSender {
             content = "The practitioner cancelled the appointment.";
             send2Patient(connector.getPatientId(), "Practitioner", content);
         }
-
-
     }
 
     public void parseData(JSONObject data){
@@ -78,13 +75,12 @@ public class EmailSender {
         connector.setType(type);
 
         if(type.equals("Update")){
-            connector.setPatientId(data.getString("patientId"));
-            connector.setPatientName(data.getString("patientName"));
-
-        }
-        else if(type.equals("Delete")){
             connector.setPractitionerId(data.getString("practitionerId"));
             connector.setPractitionerName(data.getString("practitionerName"));
+        }
+        else if(type.equals("Delete")){
+            connector.setPatientId(data.getString("patientId"));
+            connector.setPatientName(data.getString("patientName"));
         }
         else{
             connector.setPatientId(data.getString("patientId"));
