@@ -39,16 +39,18 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public R<String> login(HttpServletRequest httpServletRequest) {
+    public R<String> login(@RequestBody String data, HttpServletRequest httpServletRequest ) {
         log.info("Save Token");
 
-        userService.saveToken(httpServletRequest);
+        JSONObject jsonObject = JSONObject.parseObject(data);
 
-        String userId = httpServletRequest.getParameter("userId");
+        String res = userService.saveToken(httpServletRequest, data);
 
-        httpServletRequest.getSession().setAttribute("userId", userId);
+        if(res==null){
+            return R.error("Create Resource fail!");
+        }
 
-        return R.success();
+        return R.success(res);
     }
 
     /**
@@ -128,6 +130,7 @@ public class UserController {
      */
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
+        log.info("download {}", id);
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 //        File newestFile = getNewestFile(folderPath);
         File newestFile = new File(folderPath + filename);

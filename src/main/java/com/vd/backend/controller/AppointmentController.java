@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
-import com.vd.backend.service.RemoteFhirService;
+import com.vd.backend.service.HttpFhirService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter;
 public class AppointmentController {
 
     @Autowired
-    private RemoteFhirService remoteFhirService;
+    private HttpFhirService httpFhirService;
 
     @Autowired
     private AppointmentService appointmentService;
@@ -41,7 +41,7 @@ public class AppointmentController {
         log.info("Get appointment {}", id);
         String rel = "";
         try{
-            rel = remoteFhirService.get(resource, id);
+            rel = httpFhirService.get(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -59,7 +59,7 @@ public class AppointmentController {
         log.info("Get all appointments");
         String rel = "";
         try {
-            rel = remoteFhirService.getAll(resource);
+            rel = httpFhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -86,7 +86,7 @@ public class AppointmentController {
         log.info("Get all appointments related to practitioner {}", id);
         String rel = "";
         try {
-            rel = remoteFhirService.getById(resource, id);
+            rel = httpFhirService.getById(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -113,7 +113,7 @@ public class AppointmentController {
         JSONObject data = appointmentService.String2Json(appointment);
         data.put("id", id);
         try {
-            rel = remoteFhirService.update(resource, id, data.toString());
+            rel = httpFhirService.update(resource, id, data.toString());
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -127,7 +127,7 @@ public class AppointmentController {
         log.info("Delete appointment {}", id);
         String rel = "";
         try {
-            rel = remoteFhirService.delete(resource, id);
+            rel = httpFhirService.delete(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -150,7 +150,7 @@ public class AppointmentController {
 
         String rel = "";
         try {
-            rel = remoteFhirService.getById(resource, appointment.getPractitionerId());
+            rel = httpFhirService.getById(resource, appointment.getPractitionerId());
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -180,7 +180,7 @@ public class AppointmentController {
         JSONObject data = appointmentService.String2Json(appointment);
 
         try {
-            rel = remoteFhirService.add(resource, data.toString());
+            rel = httpFhirService.add(resource, data.toString());
         } catch (Exception e) {
             e.printStackTrace();
 

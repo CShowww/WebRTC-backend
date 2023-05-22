@@ -2,12 +2,11 @@ package com.vd.backend.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.vd.backend.common.R;
 import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.RemoteFhirService;
+import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.util.CacheImpl;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +17,11 @@ import java.util.concurrent.*;
 
 @Service
 @Slf4j
-public class AsynRemoteFhirServiceImpl implements AsynFhirService {
+public class AsynFhirServiceImpl implements AsynFhirService {
 
     // Remote http call to fhir service
     @Autowired
-    private RemoteFhirService remoteFhirService;
+    private HttpFhirService httpFhirService;
 
     private ConcurrentHashMap<String, CacheImpl> resourceCache = new ConcurrentHashMap<>();
 
@@ -36,7 +35,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
         for(String resource: resources) {
             String fhirRawData;
             try {
-                fhirRawData = remoteFhirService.getAll(resource);
+                fhirRawData = httpFhirService.getAll(resource);
                 loadToCache(fhirRawData, resource);
             } catch (Exception e) {
                 log.info("Calling remote fhir service fail");
@@ -53,7 +52,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
             public String call() throws Exception {
                 String rel = "";
                 try {
-                    rel = remoteFhirService.add(resource, data);
+                    rel = httpFhirService.add(resource, data);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -92,7 +91,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
             public void run() {
                 String rel = "";
                 try {
-                    rel = remoteFhirService.update(resource, id, data);
+                    rel = httpFhirService.update(resource, id, data);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -111,7 +110,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
             public String call() throws Exception {
                 String rel = "";
                 try{
-                    rel = remoteFhirService.get(resource, id);
+                    rel = httpFhirService.get(resource, id);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -140,7 +139,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
             public void run() {
                 String rel = "";
                 try {
-                    rel = remoteFhirService.getAll(resource);
+                    rel = httpFhirService.getAll(resource);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -1,7 +1,9 @@
 package com.vd.backend.service.impl;
 
 import com.vd.backend.service.PatientService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PatientServiceImpl implements PatientService {
     @Override
     public String add(String resource, String id) {

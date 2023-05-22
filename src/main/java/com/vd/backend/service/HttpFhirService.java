@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 )
 
 @Primary
-public interface RemoteFhirService {
+public interface HttpFhirService {
     // RESTful CRUD Operation
     @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
     public String get(@PathVariable String resource, @PathVariable String id);
