@@ -39,3 +39,7 @@ fhir:
 
 common:
   basepath: /user_file/
+
+email:
+  username: CShowwww@gmail.com
+  password: @Gcj990429
