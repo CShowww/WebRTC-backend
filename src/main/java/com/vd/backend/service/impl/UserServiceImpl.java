@@ -1,5 +1,6 @@
 package com.vd.backend.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
@@ -60,38 +61,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             user.setToken(signature);
             user.setExpiredTime(expiresAt);
             user.setId(id);
+            System.out.println(jsonObject.toString());
+            JSONArray roles = jsonObject.getJSONObject("profile").getJSONObject("resource_access").getJSONObject("virtual-doctor").getJSONArray("roles");
 
-            String actor = jsonObject.getJSONObject("profile").getString("azp");
-
-            if(actor.equals("virtual-doctor")){
-                String rel = "";
-                String template = "{\n" +
-                        "    \"resourceType\": \"Practitioner\"\n" +
-                        "}";
-                try {
-                    rel = fhirService.add("Practitioner", template);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+            for(int i = 0; i< roles.size(); i++){
+                String actor = roles.getString(i);
+                if(actor.equals("virtual-doctor-practitioner")){
+                    String rel = "";
+                    String template = "{\n" +
+                            "    \"resourceType\": \"Practitioner\"\n" +
+                            "}";
+                    try {
+                        rel = fhirService.add("Practitioner", template);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                    user.setRole(0);
+                    user.setFhirId(JSONObject.parseObject(rel).getString("id"));
+                    this.save(user);
+                    return user.getFhirId();
+                }else if(actor.equals("virtual-doctor-patient")){
+                    String rel = "";
+                    String template = "{\n" +
+                            "    \"resourceType\": \"Patient\"\n" +
+                            "}";
+                    try {
+                        rel = fhirService.add("Patient", template);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                    user.setRole(1);
+                    user.setFhirId(JSONObject.parseObject(rel).getString("id"));
+                    this.save(user);
+                    return user.getFhirId();
                 }
-                user.setRole(0);
-                user.setFhirId(JSONObject.parseObject(rel).getString("id"));
-            }else if(actor.equals("virtual-patient")){
-                String rel = "";
-                String template = "{\n" +
-                        "    \"resourceType\": \"Patient\"\n" +
-                        "}";
-                try {
-                    rel = fhirService.add("Patient", template);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-                user.setRole(1);
-                user.setFhirId(JSONObject.parseObject(rel).getString("id"));
             }
-            this.save(user);
-            return user.getFhirId();
+            return null;
         }
 
         return user.getFhirId();
