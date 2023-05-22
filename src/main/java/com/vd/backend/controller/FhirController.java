@@ -83,10 +83,12 @@ public class FhirController {
             JSONArray nameArray = res.getJSONArray("name");
 
             if (nameArray != null) {
-                JSONObject name = nameArray.getJSONObject(0);
-                family = name.getString("family");
-                for (Object s: name.getJSONArray("given")) {
-                    given += (String) s + " ";
+                if (nameArray.size() > 0 && nameArray.getJSONObject(0).getString("family") != null) {
+                    JSONObject name = nameArray.getJSONObject(0);
+                    family = name.getString("family");
+                    for (Object s: name.getJSONArray("given")) {
+                        given += (String) s + " ";
+                    }
                 }
             }
             // Telecom
@@ -302,7 +304,7 @@ public class FhirController {
 
         // 1. observation，weight
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("weight").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("weight").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("weight").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -315,7 +317,7 @@ public class FhirController {
                 .put("display", "Body-Height");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("height").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("height").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("height").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -327,7 +329,7 @@ public class FhirController {
                 .put("display", "Body-Blood");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("blood").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("blood").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("blood").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -339,7 +341,7 @@ public class FhirController {
                 .put("display", "Body-Heart");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("heart").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("heart").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("heart").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
