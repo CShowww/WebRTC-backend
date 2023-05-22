@@ -4,19 +4,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.hl7.fhir.utilities.json.model.JsonArray;
-import org.hl7.fhir.utilities.json.model.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
@@ -59,6 +53,7 @@ public class FhirController {
     @GetMapping("/profiles/{resource}")
     public R<String> getAll(@PathVariable String resource) {
         log.info("Get all {}", resource);
+
         String rel = "";
         try {
             rel = fhirService.getAll(resource);
@@ -66,29 +61,34 @@ public class FhirController {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
+        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
         JSONArray ans = new JSONArray();
 
 
-        for (int i = 0; i < entry.size(); i++) {
+        for (int i = 0; entry != null && i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();
 
             String family = "", phone = "", given = "";
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-            JSONObject name = res.getJSONArray("name")
-                    .getJSONObject(0);
+            log.info(res.toString());
+
             String id = res.getString("id");
 
+            // Names
+            JSONArray nameArray = res.getJSONArray("name");
 
-            family = name.getString("family");
-            for (Object s: name.getJSONArray("given")) {
-                given += (String) s + " ";
+            if (nameArray != null) {
+                JSONObject name = nameArray.getJSONObject(0);
+                family = name.getString("family");
+                for (Object s: name.getJSONArray("given")) {
+                    given += (String) s + " ";
+                }
             }
-
+            // Telecom
             JSONArray telecom = res.getJSONArray("telecom");
-            for (int j = 0; j < telecom.size(); j++) {
+            for (int j = 0; telecom != null && j < telecom.size(); j++) {
                 JSONObject t = telecom.getJSONObject(j);
                 String system = t.getString("system");
                 if ("phone".equals(system)) {
@@ -102,7 +102,6 @@ public class FhirController {
 
             ans.add(jsonObject);
         }
-
 
         return R.success(ans.toString());
     }
@@ -163,6 +162,7 @@ public class FhirController {
      */
 
     // display和download summary是一个接口
+
     @GetMapping("/observation/{resource}/{id}")
     public R<String> getSummary(@PathVariable String resource, @PathVariable String id) {
 
@@ -172,44 +172,88 @@ public class FhirController {
         // 2. filter Observation
         JSONArray entries = JSON.parseObject(bundle).getJSONArray("entry");
 
-        JSONObject healthDataCSV = new JSONObject();
 
-        JSONArray weightArray = new JSONArray();
-        JSONArray heightArray = new JSONArray();
+        JSONArray healthSummary = new JSONArray();
+        if (entries != null) {
+            log.info(entries.toString());
+        }
 
-        for (int i = 0; i < entries.size(); i++) {
+
+        for (int i = 0; entries != null && i < entries.size(); i++) {
+
+            JSONObject observation = new JSONObject();
+
+            //Get res and type
             JSONObject res = (JSONObject) entries.getJSONObject(i)
                     .getJSONObject("resource");
 
-            JSONObject obj = (JSONObject) res
+            JSONObject type = (JSONObject) res
                     .getJSONObject("code")
                     .getJSONArray("coding").get(0);
 
-            if (obj.get("display").equals("Body-Weight")) {
-                JSONObject weightDatum = new JSONObject();
-                weightDatum.put("effectiveDateTime", res.getString("effectiveDateTime"));
-                weightDatum.put("value", res.getJSONObject("valueQuantity").getDouble("value"));
-                weightDatum.put("notes", "any notes"); // 添加你需要的字段
-                weightArray.add(weightDatum);
-            } else if (obj.get("display").equals("Body-Height")) {
-                JSONObject heightDatum = new JSONObject();
-                heightDatum.put("effectiveDateTime", res.getString("effectiveDateTime"));
-                heightDatum.put("value", res.getJSONObject("valueQuantity").getDouble("value"));
-                heightDatum.put("notes", "any notes"); // 添加你需要的字段
-                heightArray.add(heightDatum);
+            String time = res.getString("effectiveDateTime");
+
+            Optional<JSONObject> optionalJsonObject = healthSummary.stream()
+                    .filter(obj -> {
+                        JSONObject jsonObject = (JSONObject) obj;
+                        String effectiveDateTime = jsonObject.getString("effectiveDateTime");
+                        return time.equals(effectiveDateTime);
+                    })
+                    .map(obj -> (JSONObject) obj)
+                    .findFirst();
+
+            if (optionalJsonObject.isPresent()) {
+                observation = optionalJsonObject.get();
+            } else {
+                observation.put("effectiveDateTime", time);
+                observation.put("weight", 0.0);
+                observation.put("height", 0.0);
+                observation.put("blood", 0.0);
+                observation.put("heart", 0.0);
             }
+
+            observation.put("effectiveDateTime", time);
+
+
+
+            if (type.get("display").equals("Body-Weight")) {
+
+                observation.put("weight", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+            } else if (type.get("display").equals("Body-Height")) {
+
+                observation.put("height", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+            } else if (type.get("display").equals("Body-Blood")) {
+
+                observation.put("blood", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+            } else if (type.get("display").equals("Body-Heart")) {
+
+                observation.put("heart", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+            }
+            log.info("observation: {}", observation);
+
+            healthSummary.add(observation);
         }
 
-        healthDataCSV.put("weight", weightArray);
-        healthDataCSV.put("height", heightArray);
 
-
-        return R.success(healthDataCSV.toString());
+        return R.success(healthSummary.toString());
     }
 
+    /**
+     * TODO: remove duplicate and add more types
+     *
+     * @param resource
+     * @param id
+     * @param data
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/observation/{resource}/{id}")
     public R<String> addObservation(@PathVariable String resource, @PathVariable String id, @RequestBody String data) throws IOException {
-        String weightObservation = "", heightObservation = "";
+        String weightObservation = "", heightObservation = "", bloodObservation = "", heartObservation = "";
 
         JSONObject templates = JSON.parseObject("{\n" +
                 "  \"resourceType\": \"Observation\",\n" +
@@ -236,6 +280,7 @@ public class FhirController {
 
         JSONObject jsData = JSON.parseObject(data);
 
+
         log.info("templates: " + templates.toString());
         log.info("jsData: " + jsData.toString());
 
@@ -246,8 +291,8 @@ public class FhirController {
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("weight").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
-
         weightObservation = templates.toString();
+
 
         // 2. observation，height
         templates.getJSONObject("code").getJSONArray("coding")
@@ -261,14 +306,45 @@ public class FhirController {
 
         heightObservation = templates.toString();
 
+        // 3. observation, blood
+        templates.getJSONObject("code").getJSONArray("coding")
+                .getJSONObject(0)
+                .put("display", "Body-Blood");
+
+        templates.getJSONObject("subject").put("reference", resource + "/" + id);
+        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("blood").get("value"));
+        templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("blood").get("unit"));
+        templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
+
+        bloodObservation = templates.toString();
+
+        // 4. observation, blood
+        templates.getJSONObject("code").getJSONArray("coding")
+                .getJSONObject(0)
+                .put("display", "Body-Heart");
+
+        templates.getJSONObject("subject").put("reference", resource + "/" + id);
+        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("heart").get("value"));
+        templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("heart").get("unit"));
+        templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
+
+        heartObservation = templates.toString();
+
+
         log.info(weightObservation.toString());
         log.info(heightObservation.toString());
+        log.info(bloodObservation.toString());
+        log.info(heartObservation.toString());
+
+
 
         // 3. send fhir request
-        String[] rels = new String[2];
+        String[] rels = new String[4];
         try {
             rels[0] = fhirService.add("Observation", weightObservation);
             rels[1] = fhirService.add("Observation", heightObservation);
+            rels[2] = fhirService.add("Observation", bloodObservation);
+            rels[3] = fhirService.add("Observation", heartObservation);
         } catch (Exception e) {
             e.printStackTrace();
 

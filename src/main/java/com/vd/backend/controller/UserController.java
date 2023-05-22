@@ -113,7 +113,6 @@ public class UserController {
         JSONArray ans = new JSONArray();
         if (folder.isDirectory()) {
 
-
             File[] files = folder.listFiles();
             for (File file : files) {
                 JSONObject jsonObject = new JSONObject();
@@ -144,6 +143,7 @@ public class UserController {
 
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
+        log.info("download {}", id);
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
 //        File newestFile = getNewestFile(folderPath);
