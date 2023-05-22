@@ -42,6 +42,7 @@ public class FhirController {
 
             return R.error(e.getMessage());
         }
+
         return R.success(rel);
     }
 
@@ -57,6 +58,7 @@ public class FhirController {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
+
 
         JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
@@ -180,13 +182,13 @@ public class FhirController {
                 JSONObject weightDatum = new JSONObject();
                 weightDatum.put("effectiveDateTime", res.getString("effectiveDateTime"));
                 weightDatum.put("value", res.getJSONObject("valueQuantity").getDouble("value"));
-                weightDatum.put("notes", "any notes"); // 添加你需要的字段
+                weightDatum.put("notes", "any notes");
                 weightArray.add(weightDatum);
             } else if (obj.get("display").equals("Body-Height")) {
                 JSONObject heightDatum = new JSONObject();
                 heightDatum.put("effectiveDateTime", res.getString("effectiveDateTime"));
                 heightDatum.put("value", res.getJSONObject("valueQuantity").getDouble("value"));
-                heightDatum.put("notes", "any notes"); // 添加你需要的字段
+                heightDatum.put("notes", "any notes");
                 heightArray.add(heightDatum);
             }
         }

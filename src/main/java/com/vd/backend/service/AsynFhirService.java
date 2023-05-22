@@ -7,7 +7,9 @@ public interface AsynFhirService {
 
     String delete();
 
-    String update();
+    String update(String resource, String id, String data);
 
-    String get();
+    String get(String resource, String id) throws ExecutionException, InterruptedException;
+
+    String getAll(String resource);
 }

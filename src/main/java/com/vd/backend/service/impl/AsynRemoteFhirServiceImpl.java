@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.Cache;
 import com.vd.backend.service.RemoteFhirService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
     @Override
     public String add(String resource, String data) throws ExecutionException, InterruptedException {
         // add fhir server
-        Callable<String> task = new Callable<String>() {
+        Callable<String> addToFhir = new Callable<String>() {
             @Override
             public String call() throws Exception {
                 String rel = "";
@@ -57,50 +57,104 @@ public class AsynRemoteFhirServiceImpl implements AsynFhirService {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                JSONObject jsonObject = JSONObject.parseObject(rel);
 
-                String id = jsonObject.getString("id");
-
-                return id;
+                return rel;
             }
         };
-        FutureTask<String> futureTask = new FutureTask<>(task);
+        FutureTask<String> futureTask = new FutureTask<>(addToFhir);
         Thread thread = new Thread(futureTask);
         thread.start();
 
-        String resourceId = futureTask.get();
+        // Obtain result
+        String rel = futureTask.get();
+        JSONObject jsonObject = JSONObject.parseObject(rel);
+        String resourceId = jsonObject.getString("id");
 
         // update cache
         this.resourceCache.get(resource).put(resourceId, resource);
 
-        return " add ok";
+        return rel;
     }
 
     @Override
-    public void delete() {
-
+    public String delete() {
+        return null;
     }
 
     @Override
-    public void update() {
-
-        // update cahce
+    public String update(String resource, String id, String data) {
+        // update cache
+        this.resourceCache.get(resource).put(id, resource);
 
         // update fhir service
-        // thread.start()
+        Thread updateToFhir = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String rel = "";
+                try {
+                    rel = remoteFhirService.update(resource, id, data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
+        updateToFhir.start();
+
+        return "Asyn updating";
     }
 
     @Override
-    public void get() {
+    public String get(String resource, String id) throws ExecutionException, InterruptedException {
+        Callable<String> getFromFhir = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                String rel = "";
+                try{
+                    rel = remoteFhirService.get(resource, id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return rel;
+            }
+        };
 
+        FutureTask<String> task = new FutureTask<>(getFromFhir);
+        String rel = "";
+
+        // Get from database if not exist
+        if (this.resourceCache.get(resource).containsKey(id)) {
+            rel = this.resourceCache.get(resource).get(id);
+        } else {
+            rel = task.get();
+            this.add(resource, rel);
+        }
+
+        return rel;
+    }
+
+    @Override
+    public String getAll(String resource) {
+        Thread getAllFromFhir = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String rel = "";
+                try {
+                    rel = remoteFhirService.getAll(resource);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // TODO update cache
+            }
+        });
+
+        String rel = resourceCache.get(resource).toString();
+        return rel;
     }
 
 
     private void loadToCache(String data, String resource) {
-
         CacheImpl cache = new CacheImpl(50);
-
         // json process
         JSONObject jsonObject = JSONObject.parseObject(data);
         JSONArray entry = jsonObject.getJSONArray("entry");
