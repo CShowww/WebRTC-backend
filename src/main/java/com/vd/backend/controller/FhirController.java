@@ -3,6 +3,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
+import io.micrometer.observation.Observation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
@@ -80,8 +83,8 @@ public class FhirController {
             JSONArray nameArray = res.getJSONArray("name");
 
             if (nameArray != null) {
-                JSONObject name = nameArray.getJSONObject(0);
-                if(name!=null){
+                if (nameArray.size() > 0 && nameArray.getJSONObject(0).getString("family") != null) {
+                    JSONObject name = nameArray.getJSONObject(0);
                     family = name.getString("family");
                     for (Object s: name.getJSONArray("given")) {
                         given += (String) s + " ";
@@ -174,16 +177,41 @@ public class FhirController {
         // 2. filter Observation
         JSONArray entries = JSON.parseObject(bundle).getJSONArray("entry");
 
-
         JSONArray healthSummary = new JSONArray();
+
         if (entries != null) {
             log.info(entries.toString());
         }
 
+        // 3. gather time
+        Set<String> timeSet = new HashSet<>();
 
         for (int i = 0; entries != null && i < entries.size(); i++) {
 
+            //Get res and type
+            JSONObject res = (JSONObject) entries.getJSONObject(i)
+                    .getJSONObject("resource");
+
+            String time = res.getString("effectiveDateTime");
+
+            timeSet.add(time);
+        }
+
+        for (String t : timeSet) {
             JSONObject observation = new JSONObject();
+            observation.put("effectiveDateTime", t);
+            observation.put("height", 0.0);
+            observation.put("weight", 0.0);
+            observation.put("blood", 0.0);
+            observation.put("heart", 0.0);
+
+            healthSummary.add(observation);
+        }
+
+        log.info(timeSet.toString() + " " + healthSummary.toString());
+
+        // 4. update data
+        for(int i = 0; entries != null && i < entries.size(); i++) {
 
             //Get res and type
             JSONObject res = (JSONObject) entries.getJSONObject(i)
@@ -195,52 +223,39 @@ public class FhirController {
 
             String time = res.getString("effectiveDateTime");
 
-            Optional<JSONObject> optionalJsonObject = healthSummary.stream()
-                    .filter(obj -> {
-                        JSONObject jsonObject = (JSONObject) obj;
-                        String effectiveDateTime = jsonObject.getString("effectiveDateTime");
-                        return time.equals(effectiveDateTime);
-                    })
-                    .map(obj -> (JSONObject) obj)
-                    .findFirst();
+            // find object related to time and update
+            for (int j = 0; j < healthSummary.size(); j++) {
+                JSONObject observation = healthSummary.getJSONObject(j);
 
-            if (optionalJsonObject.isPresent()) {
-                observation = optionalJsonObject.get();
-            } else {
-                observation.put("effectiveDateTime", time);
-                observation.put("weight", 0.0);
-                observation.put("height", 0.0);
-                observation.put("blood", 0.0);
-                observation.put("heart", 0.0);
+                if (time.equals(observation.getString("effectiveDateTime"))) {
+
+                    if (type.get("display").equals("Body-Weight")) {
+
+                        observation.put("weight", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Height")) {
+
+                        observation.put("height", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Blood")) {
+
+                        observation.put("blood", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    } else if (type.get("display").equals("Body-Heart")) {
+
+                        observation.put("heart", res.getJSONObject("valueQuantity").getDoubleValue("value"));
+
+                    }
+
+                    log.info("set: {}, {}, {}", j, observation, healthSummary);
+                    healthSummary.set(j, observation);
+
+                    break;
+                }
             }
-
-            observation.put("effectiveDateTime", time);
-
-
-
-            if (type.get("display").equals("Body-Weight")) {
-
-                observation.put("weight", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Height")) {
-
-                observation.put("height", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Blood")) {
-
-                observation.put("blood", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            } else if (type.get("display").equals("Body-Heart")) {
-
-                observation.put("heart", res.getJSONObject("valueQuantity").getDoubleValue("value"));
-
-            }
-            log.info("observation: {}", observation);
-
-            healthSummary.add(observation);
         }
 
-
+        log.info(healthSummary.toString());
         return R.success(healthSummary.toString());
     }
 
@@ -289,7 +304,7 @@ public class FhirController {
 
         // 1. observation，weight
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("weight").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("weight").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("weight").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -302,7 +317,7 @@ public class FhirController {
                 .put("display", "Body-Height");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("height").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("height").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("height").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -314,7 +329,7 @@ public class FhirController {
                 .put("display", "Body-Blood");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("blood").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("blood").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("blood").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
@@ -326,7 +341,7 @@ public class FhirController {
                 .put("display", "Body-Heart");
 
         templates.getJSONObject("subject").put("reference", resource + "/" + id);
-        templates.getJSONObject("valueQuantity").put("value", jsData.getJSONObject("heart").get("value"));
+        templates.getJSONObject("valueQuantity").put("value", (int) jsData.getJSONObject("heart").get("value"));
         templates.getJSONObject("valueQuantity").put("unit", (String) jsData.getJSONObject("heart").get("unit"));
         templates.put("effectiveDateTime", (String) jsData.get("effectiveDateTime"));
 
