@@ -39,3 +39,8 @@ fhir:
 
 common:
   basepath: /user_file/
+
+email:
+  username: CShowwww@gmail.com
+  password: shsrfiurpnshlyrv
+  subject: Notification from Virtual Doctor Platform
