@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
 * @author 63013
@@ -61,18 +63,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             user.setToken(signature);
             user.setExpiredTime(expiresAt);
             user.setId(id);
-            System.out.println(jsonObject.toString());
-            JSONArray roles = jsonObject.getJSONObject("profile").getJSONObject("resource_access").getJSONObject("virtual-doctor").getJSONArray("roles");
+//            System.out.println(jsonObject.toString());
+
+            JSONObject profile = jsonObject.getJSONObject("profile");
+            JSONArray roles = profile.getJSONObject("resource_access").getJSONObject("virtual-doctor").getJSONArray("roles");
 
             for(int i = 0; i< roles.size(); i++){
                 String actor = roles.getString(i);
                 if(actor.equals("virtual-doctor-practitioner")){
-                    String rel = "";
                     String template = "{\n" +
                             "    \"resourceType\": \"Practitioner\"\n" +
                             "}";
+                    JSONObject jsonTemplate = JSONObject.parseObject(template);
+                    //parse Name
+                    JSONArray nameArray = new JSONArray();
+                    JSONObject name = new JSONObject();
+                    name.put("use", "official");
+                    name.put("family", profile.getString("family_name"));
+                    List<String> givenName = Arrays.asList(profile.getString("given_name"));
+                    name.put("given", givenName);
+                    nameArray.add(name);
+                    jsonTemplate.put("name", nameArray);
+                    //parse Email
+                    JSONArray telecomArray = new JSONArray();
+                    JSONObject telecom = new JSONObject();
+                    telecom.put("system", "email");
+                    telecom.put("value", profile.getString("email"));
+                    telecom.put("use", "work");
+                    telecomArray.add(telecom);
+                    jsonTemplate.put("telecom", telecomArray);
+                    //parse gender
+                    if(profile.getString("gender")!=null){
+                        jsonTemplate.put("gender", profile.getString("gender").toLowerCase());
+                    }
+                    //parse birth
+                    jsonTemplate.put("birthDate", profile.getString("birth_date"));
+                    System.out.println(jsonTemplate);
+
+                    String rel = "";
                     try {
-                        rel = fhirService.add("Practitioner", template);
+                        rel = fhirService.add("Practitioner", jsonTemplate.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -82,12 +112,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     this.save(user);
                     return user.getFhirId();
                 }else if(actor.equals("virtual-doctor-patient")){
-                    String rel = "";
                     String template = "{\n" +
                             "    \"resourceType\": \"Patient\"\n" +
                             "}";
+
+                    JSONObject jsonTemplate = JSONObject.parseObject(template);
+                    //parse Name
+                    JSONArray nameArray = new JSONArray();
+                    JSONObject name = new JSONObject();
+                    name.put("use", "official");
+                    name.put("family", profile.getString("family_name"));
+                    List<String> givenName = Arrays.asList(profile.getString("given_name"));
+                    name.put("given", givenName);
+                    nameArray.add(name);
+                    jsonTemplate.put("name", nameArray);
+                    //parse Email
+                    JSONArray telecomArray = new JSONArray();
+                    JSONObject telecom = new JSONObject();
+                    telecom.put("system", "email");
+                    telecom.put("value", profile.getString("email"));
+                    telecom.put("use", "work");
+                    telecomArray.add(telecom);
+                    jsonTemplate.put("telecom", telecomArray);
+                    //parse gender
+                    if(profile.getString("gender")!=null){
+                        jsonTemplate.put("gender", profile.getString("gender").toLowerCase());
+                    }
+                    //parse birth
+                    jsonTemplate.put("birthDate", profile.getString("birth_date"));
+                    System.out.println(jsonTemplate);
+
+                    String rel = "";
                     try {
-                        rel = fhirService.add("Patient", template);
+                        rel = fhirService.add("Patient", jsonTemplate.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;

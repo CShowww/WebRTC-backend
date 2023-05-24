@@ -22,10 +22,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 
 @Slf4j
 @RestController
@@ -47,8 +43,6 @@ public class UserController {
     @PostMapping("/login")
     public R<String> login(@RequestBody String data, HttpServletRequest httpServletRequest ) {
         log.info("Save Token");
-
-        JSONObject jsonObject = JSONObject.parseObject(data);
 
         String res = userService.saveToken(httpServletRequest, data);
 

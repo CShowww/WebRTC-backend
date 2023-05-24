@@ -13,13 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
 
 @Slf4j
 @RestController
@@ -89,12 +84,42 @@ public class AppointmentController {
      * @param id
      * @return
      */
-    @GetMapping("/getById/{id}")
-    public R<String> getById(@PathVariable String id) {
+    @GetMapping("/getById/practitioner/{id}")
+    public R<String> getByPractitionerId(@PathVariable String id) {
         log.info("Get all appointments related to practitioner {}", id);
         String rel = "";
         try {
-            rel = fhirService.getById(resource, id);
+            rel = fhirService.getByPractitionerId(resource, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.error("Call fhir server fail");
+        }
+        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
+
+        JSONArray ans = new JSONArray();
+
+        if(entry!=null){
+            for (int i = 0; i < entry.size(); i++) {
+
+                JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+                ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
+            }
+        }
+
+        return R.success(ans.toString());
+    }
+
+    /**
+     * Get all appointments related to a patient
+     * @param id
+     * @return
+     */
+    @GetMapping("/getById/patient/{id}")
+    public R<String> getByPatientId(@PathVariable String id) {
+        log.info("Get all appointments related to practitioner {}", id);
+        String rel = "";
+        try {
+            rel = fhirService.getByPatientId(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -118,6 +143,9 @@ public class AppointmentController {
     public R<String> update(@PathVariable String id, @RequestBody Appointment appointment) {
         log.info("Update appointment {}", id);
         String rel = "";
+        if(appointmentService.getUserInfoById(appointment) < 0){
+            return R.error("Get user resource false.");
+        }
         JSONObject data = appointmentService.String2Json(appointment);
         data.put("id", id);
         try {
@@ -127,6 +155,8 @@ public class AppointmentController {
 
             return R.error("UPDATE fail");
         }
+        // send email
+
         return R.success(rel);
     }
 
@@ -158,7 +188,7 @@ public class AppointmentController {
 
         String rel = "";
         try {
-            rel = fhirService.getById(resource, appointment.getPractitionerId());
+            rel = fhirService.getByPractitionerId(resource, appointment.getPractitionerId());
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -185,6 +215,9 @@ public class AppointmentController {
             }
         }
 
+        if(appointmentService.getUserInfoById(appointment) < 0){
+            return R.error("Get user resource false.");
+        }
         JSONObject data = appointmentService.String2Json(appointment);
 
         try {
