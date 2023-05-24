@@ -93,9 +93,9 @@ public class EmailSender {
 
             Transport.send(message);
 
-            System.out.println("邮件发送成功！");
+            log.info("Send successfully!");
         } catch (MessagingException e) {
-            System.out.println("邮件发送失败：" + e.getMessage());
+            log.info("Fail to send email." + e.getMessage());
         }
     }
 
@@ -111,7 +111,7 @@ public class EmailSender {
 
             log.info("Send successfully!");
         } catch (MessagingException e) {
-            System.out.println("Fail to send email." + e.getMessage());
+            log.info("Fail to send email." + e.getMessage());
         }
     }
 }
