@@ -13,6 +13,10 @@ public class Connector {
 
     String practitionerName;
 
+    String patientEmail;
+
+    String practitionerEmail;
+
     // "Update","Delete","Add"
     String type;
 
