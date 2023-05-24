@@ -24,7 +24,6 @@ public class EmailSender {
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
 
-        // 创建认证对象
         auth = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication("CShowwww@gmail.com", "shsrfiurpnshlyrv");
@@ -87,13 +86,11 @@ public class EmailSender {
     public void send2Patient(String content){
         log.info("Send email to patient, the content is {}",content);
         try {
-            // 创建邮件消息
             message.setFrom(new InternetAddress("${email.username}"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(connector.getPatientEmail()));
             message.setSubject("Notification from Virtual Doctor Platform");
             message.setText(content);
 
-            // 发送邮件
             Transport.send(message);
 
             System.out.println("邮件发送成功！");
@@ -105,7 +102,6 @@ public class EmailSender {
     public void send2Practitioner(String content){
         log.info("Send email to practitioner, the content is {}",content);
         try {
-            // 创建邮件消息
             message.setFrom(new InternetAddress("${email.username}"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(connector.getPractitionerEmail()));
             message.setSubject("Notification from Virtual Doctor Platform");
