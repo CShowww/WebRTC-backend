@@ -3,30 +3,22 @@ package com.vd.backend.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.vd.backend.common.R;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
-import com.vd.backend.service.FhirService;
+import com.vd.backend.service.HttpFhirService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
-    FhirService fhirService;
+    HttpFhirService fhirService;
 
     @Override
     public String Json2String(JSONObject jsonObject) {

@@ -4,7 +4,7 @@ package com.vd.backend.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.vd.backend.common.R;
-import com.vd.backend.service.FhirService;
+import com.vd.backend.service.HttpFhirService;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CommonController {
 
     @Autowired
-    FhirService fhirService;
+    HttpFhirService fhirService;
 
     /**
      * 文件上传
