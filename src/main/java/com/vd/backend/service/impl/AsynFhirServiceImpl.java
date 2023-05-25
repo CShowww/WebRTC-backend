@@ -3,6 +3,7 @@ package com.vd.backend.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.service.AsynFhirService;
+import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.CacheImpl;
 import jakarta.annotation.PostConstruct;
@@ -25,28 +26,26 @@ public class AsynFhirServiceImpl implements AsynFhirService {
 
     private ConcurrentHashMap<String, CacheImpl> resourceCache = new ConcurrentHashMap<>();
 
+
+    @Autowired
+    CacheService cacheService;
+
+
     private List<String> resources = new ArrayList<>(
             Arrays.asList("Patient", "Observation", "Appointment", "Practitioner"));
 
-    // load fhir resource into cache
-    @PostConstruct
-    void init() {
-        // Get the most of resources into cache
-        for(String resource: resources) {
-            String fhirRawData;
-            try {
-                fhirRawData = httpFhirService.getAll(resource);
-                loadToCache(fhirRawData, resource);
-            } catch (Exception e) {
-                log.info("Calling remote fhir service fail");
-                e.printStackTrace();
-            }
-        }
-    }
 
+    /**
+     * Add to fhir service and cache it
+     * @param resource
+     * @param data
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     @Override
     public String add(String resource, String data) throws ExecutionException, InterruptedException {
-        // add fhir server
+        // Add to fhir server and obtain resource id
         Callable<String> addToFhir = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -64,13 +63,11 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         Thread thread = new Thread(futureTask);
         thread.start();
 
-        // Obtain result
         String rel = futureTask.get();
-        JSONObject jsonObject = JSONObject.parseObject(rel);
-        String resourceId = jsonObject.getString("id");
+        String id = JSONObject.parseObject(rel).getString("id");
 
         // update cache
-        this.resourceCache.get(resource).put(resourceId, resource);
+        cacheService.set(getCacheKey(resource, id), data);
 
         return rel;
     }
@@ -82,10 +79,11 @@ public class AsynFhirServiceImpl implements AsynFhirService {
 
     @Override
     public String update(String resource, String id, String data) {
-        // update cache
-        this.resourceCache.get(resource).put(id, resource);
 
-        // update fhir service
+        // update cache
+        cacheService.set(getCacheKey(resource, id), data);
+
+        // Async update fhir service
         Thread updateToFhir = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -103,6 +101,14 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         return "Asyn updating";
     }
 
+    /**
+     * TODO: check consistency
+     * @param resource
+     * @param id
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     @Override
     public String get(String resource, String id) throws ExecutionException, InterruptedException {
         Callable<String> getFromFhir = new Callable<String>() {
@@ -122,8 +128,9 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         String rel = "";
 
         // Get from database if not exist
-        if (this.resourceCache.get(resource).containsKey(id)) {
-            rel = this.resourceCache.get(resource).get(id);
+
+        if (cacheService.hasKey(getCacheKey(resource, id))) {
+            rel = cacheService.get(getCacheKey(resource, id));
         } else {
             rel = task.get();
             this.add(resource, rel);
@@ -152,25 +159,51 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     }
 
 
-    private void loadToCache(String data, String resource) {
-        CacheImpl cache = new CacheImpl(50);
+    /**
+     * Load all available resource into cache
+     */
+    @PostConstruct
+    void init() {
+        for(String resource: resources) {
+
+            try {
+                String bundle = httpFhirService.getAll(resource);
+                loadToCache(bundle, resource);
+            } catch (Exception e) {
+                log.info("Calling remote fhir service fail");
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+    private void loadToCache(String bundle, String resource) {
+        // cache bundle data
+        cacheService.set(getCacheKey(resource, "bundle"), bundle);
+
         // json process
-        JSONObject jsonObject = JSONObject.parseObject(data);
+        JSONObject jsonObject = JSONObject.parseObject(bundle);
         JSONArray entry = jsonObject.getJSONArray("entry");
 
-        for(int i=0; i < entry.size(); i++) {
+        for (int i=0; entry != null && i < entry.size(); i++) {
 
-            JSONObject entryObject = entry.getJSONObject(i);
+            JSONObject res =  entry.getJSONObject(i).getJSONObject("resource");
 
-            JSONObject resourceObject = entryObject.getJSONObject("resource");
+            String id = res.getString("id");
 
-            String id = resourceObject.getString("id");
+            String cacheId = getCacheKey(resource, id);
 
-            cache.put(id, resourceObject.toString());
+            String cacheData = res.toJSONString();
+
+            cacheService.set(cacheId, cacheData);
         }
+    }
 
-        resourceCache.put(resource, cache);
 
+    private String getCacheKey(String resource, String id) {
+        return resource + ":" + id;
     }
 
 }
