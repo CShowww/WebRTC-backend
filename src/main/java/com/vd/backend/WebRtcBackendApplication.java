@@ -7,8 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Slf4j
 @SpringBootApplication
@@ -16,6 +18,7 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 @ServletComponentScan
 @EnableFeignClients
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
+@EnableCaching
 public class WebRtcBackendApplication {
 
     public static void main(String[] args) {

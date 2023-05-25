@@ -1,6 +1,5 @@
 package com.vd.backend.controller;
 
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
@@ -23,10 +22,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 
 @Slf4j
 @RestController
@@ -46,16 +41,16 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    public R<String> login(HttpServletRequest httpServletRequest) {
+    public R<String> login(@RequestBody String data, HttpServletRequest httpServletRequest ) {
         log.info("Save Token");
 
-        userService.saveToken(httpServletRequest);
+        String res = userService.saveToken(httpServletRequest, data);
 
-        String userId = httpServletRequest.getParameter("userId");
+        if(res==null){
+            return R.error("Create Resource fail!");
+        }
 
-        httpServletRequest.getSession().setAttribute("userId", userId);
-
-        return R.success();
+        return R.success(res);
     }
 
     /**
@@ -112,7 +107,6 @@ public class UserController {
         JSONArray ans = new JSONArray();
         if (folder.isDirectory()) {
 
-
             File[] files = folder.listFiles();
             for (File file : files) {
                 JSONObject jsonObject = new JSONObject();
@@ -143,6 +137,7 @@ public class UserController {
 
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {
+        log.info("download {}", id);
         String folderPath = new ApplicationHome(getClass()).getDir().getPath() + basePath + id + "/" + category + "/";
 
 //        File newestFile = getNewestFile(folderPath);

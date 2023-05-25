@@ -8,4 +8,6 @@ public interface AppointmentService {
     public String Json2String(JSONObject jsonObject);
 
     public JSONObject String2Json(Appointment appointment);
+
+    public int getUserInfoById(Appointment appointment);
 }

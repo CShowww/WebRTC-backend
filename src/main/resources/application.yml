@@ -1,13 +1,13 @@
 server:
   port: 8080
 
-
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost/digital_health?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 123456
+#    password: 123456
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -16,6 +16,10 @@ spring:
   http:
     multipart:
       enable: false;
+  redis:
+    host: 127.0.0.1
+    database: 0
+    port: 6379
 
 mybatis-plus:
   configuration:
@@ -30,6 +34,7 @@ mybatis-plus:
       logic-not-delete-value: 1
       # 删除后
       logic-delete-value: 0
+
 fhir:
   name: fhir-server
   url: https://smilecdr-uom2.comp90082-2023.vsbox.dev/fhir
