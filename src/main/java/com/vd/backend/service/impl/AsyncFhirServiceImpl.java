@@ -35,7 +35,7 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     CacheService cacheService;
 
     private List<String> resources = new ArrayList<>(
-            Arrays.asList("Patient", "Observation", "Appointment", "Practitioner"));
+            Arrays.asList("Patient", "Observation", "Appointment", "Practitioner", "MedicationDispense", "Medication"));
 
 
     /**
@@ -263,12 +263,14 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
 
     @Override
     public String getByPractitionerId(String resource, String id) {
-        return null;
+
+        return httpFhirService.getByPractitionerId(resource, id);
     }
 
     @Override
     public String getByPatientId(String resource, String id) {
-        return null;
+
+        return httpFhirService.getByPatientId(resource, id);
     }
 
 

@@ -55,7 +55,7 @@ public class PrescriptionController {
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; i < entry.size(); i++) {
+        for (int i = 0; entry != null && i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
@@ -139,7 +139,7 @@ public class PrescriptionController {
         templates.getJSONObject("subject").put("reference", jsData.get("Patient/" + "patientId"));
         templates.getJSONObject("subject").put("display", jsData.get("patientName"));
 
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", jsData.get("Practitioner/" + "practitionerId"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("reference", jsData.get("practitionerId"));
         templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get("practitionerName"));
 
         templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));

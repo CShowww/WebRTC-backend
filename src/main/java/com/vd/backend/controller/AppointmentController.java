@@ -10,6 +10,7 @@ import com.vd.backend.entity.bo.Connector;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
 
+import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.EmailSender;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,8 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -31,7 +34,7 @@ import java.time.format.DateTimeFormatter;
 public class AppointmentController {
 
     @Autowired
-    private HttpFhirService fhirService;
+    private AsynFhirService fhirService;
 
     @Autowired
     private AppointmentService appointmentService;
@@ -68,20 +71,18 @@ public class AppointmentController {
     @GetMapping("/getAll")
     public R<String> getAll() {
         log.info("Get all appointments");
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
-
         JSONArray ans = new JSONArray();
-        for (int i = 0; i < entry.size(); i++) {
 
-            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-            ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
+        for (String s: rel) {
+            JSONObject object = JSON.parseObject(s);
+            ans.add(JSONObject.parseObject(appointmentService.Json2String(object)));
         }
 
         return R.success(ans.toString());
@@ -164,16 +165,9 @@ public class AppointmentController {
             return R.error("UPDATE fail");
         }
 
-        // send email
-        Connector connector = new Connector();
-        BeanUtils.copyProperties(appointment, connector);
-        connector.setType("Update");
-        EmailSender emailSender = new EmailSender();
-        try{
-            emailSender.sendEmail(connector);
-        }catch (MessagingException e){
-            log.info("Send email fails!");
-        }
+        Thread t = new Thread(new sendEmailTask(appointment, "Update"));
+        t.start();
+
 
         return R.success(rel);
     }
@@ -204,16 +198,8 @@ public class AppointmentController {
             return R.error("DELETE fail");
         }
 
-        // send email
-        Connector connector = new Connector();
-        BeanUtils.copyProperties(appointment, connector);
-        connector.setType("Delete");
-        EmailSender emailSender = new EmailSender();
-        try{
-            emailSender.sendEmail(connector);
-        }catch (MessagingException e){
-            log.info("Send email fails!");
-        }
+        Thread t = new Thread(new sendEmailTask(appointment, "Delete"));
+        t.start();
 
         return R.success(rel);
     }
@@ -277,17 +263,37 @@ public class AppointmentController {
         R<String> r = R.success(rel);
         r.setMsg(pId);
 
-        // send email
-        Connector connector = new Connector();
-        BeanUtils.copyProperties(appointment, connector);
-        connector.setType("Add");
-        EmailSender emailSender = new EmailSender();
-        try{
-            emailSender.sendEmail(connector);
-        }catch (MessagingException e){
-            log.info("Send email fails!");
-        }
+
+        Thread t = new Thread(new sendEmailTask(appointment, "Add"));
+        t.start();
+
 
         return r;
     }
+
+    class sendEmailTask implements Runnable {
+
+        String type = null;
+
+        Appointment appointment = null;
+        public sendEmailTask(Appointment appointment, String type) {
+            this.type = type;
+            this.appointment = appointment;
+        }
+
+        @Override
+        public void run() {
+            // send email
+            Connector connector = new Connector();
+            BeanUtils.copyProperties(appointment, connector);
+            connector.setType(type);
+            EmailSender emailSender = new EmailSender();
+            try{
+                emailSender.sendEmail(connector);
+            }catch (MessagingException e){
+                log.info("Send email fails!");
+            }
+        }
+    }
+
 }

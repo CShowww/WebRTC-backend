@@ -79,6 +79,7 @@ public class ProfilesServiceImpl implements ProfilesService {
     }
 
 
+
     /**
      * Delete fhir resource
      * @param resource
@@ -142,8 +143,6 @@ public class ProfilesServiceImpl implements ProfilesService {
 
         // Transfer to front end required data format
         JSONArray info = new JSONArray();
-
-        log.info(resources.toString());
 
         for (String s : resources) {
             JSONObject res = JSON.parseObject(s);
