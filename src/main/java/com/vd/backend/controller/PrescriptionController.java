@@ -65,9 +65,9 @@ public class PrescriptionController {
             String recorded = res.getString("whenPrepared"); // 1
 
 
-            String practitionerId = res.getJSONObject("performer").getJSONObject("actor").getString("reference"); //1
+            String practitionerId = res.getJSONArray("performer").getJSONObject(0).getJSONObject("actor").getString("reference"); //1
             practitionerId = practitionerId.substring(13);
-            String practitionerName = res.getJSONObject("performer").getJSONObject("actor").getString("display"); //1
+            String practitionerName = res.getJSONArray("performer").getJSONObject(0).getJSONObject("actor").getString("display"); //1
 
 
             String medicationId = res.getJSONObject("medicationReference").getString("reference"); //1
@@ -101,69 +101,8 @@ public class PrescriptionController {
         log.info("Post {}", resource);
         String rel = "";
 
-        JSONObject templates = JSON.parseObject("{\n" +
-                "    \"resourceType\": \"MedicationDispense\",\n" +
-                "    \"id\": \"1573\",\n" +
-                "    \"meta\": {\n" +
-                "        \"versionId\": \"1\",\n" +
-                "        \"lastUpdated\": \"2023-05-25T23:02:05.041+10:00\"\n" +
-                "    },\n" +
-                "    \"status\": \"in-progress\",\n" +
-                "    \"medicationReference\": {\n" +
-                "        \"reference\": \"Medication/1538\",\n" +
-                "        \"display\": \"Vancomycin Hydrochloride (VANCOMYCIN HYDROCHLORIDE)\"\n" +
-                "    },\n" +
-                "    \"subject\": {\n" +
-                "        \"reference\": \"Patient/1535\",\n" +
-                "        \"display\": \"VD-Patient-Test\"\n" +
-                "    },\n" +
-                "    \"performer\": [\n" +
-                "        {\n" +
-                "            \"actor\": {\n" +
-                "                \"reference\": \"Practitioner/1522\",\n" +
-                "                \"display\": \"Jenny\"\n" +
-                "            }\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"quantity\": {\n" +
-                "        \"value\": 3,\n" +
-                "        \"system\": \"http://snomed.info/sct\",\n" +
-                "        \"code\": \"415818006\"\n" +
-                "    },\n" +
-                "    \"whenPrepared\": \"2023-05-25T10:20:00Z\"\n" +
-                "}");
-
-
-        JSONObject jsData = JSON.parseObject(data);
-
-        templates.getJSONObject("subject").put("reference", "Patient/" + jsData.get("patientId"));
-        templates.getJSONObject("subject").put("display", jsData.get("patientName"));
-
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" +jsData.get("practitionerId"));
-        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
-
-
-//        JSONArray performerArray = templates.getJSONArray("performer");
-//        JSONObject actorObj = performerArray.getJSONObject(0).getJSONObject("actor");
-//        actorObj.put("reference", "Practitioner/" + jsData.get("practitionerId"));
-//        actorObj.put("display", jsData.get("practitionerName"));
-//        performerArray.set(0, actorObj);
-//        templates.put("performer", performerArray);
-
-
-
-
-
-        templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
-        templates.getJSONObject("medicationReference").put("display", jsData.get("medicationName"));
-
-        templates.put("status", jsData.get("status"));
-        templates.put("whenPrepared", (new Date().toString()));
-        templates.getJSONObject("quantity").put("value",jsData.get("quantity"));
-
         try {
-            log.info("add to fhir res: {}", templates.toString());
-            rel = fhirService.add(resource, templates.toString());
+            rel = fhirService.add(resource, data);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -182,64 +121,8 @@ public class PrescriptionController {
     public R<String> updatePrescription(@PathVariable String id, @RequestBody String data) {
         log.info("Update {}/{}", resource, id);
         String rel = "";
-
-        JSONObject templates = JSON.parseObject("{\n" +
-                "    \"resourceType\": \"MedicationDispense\",\n" +
-                "    \"id\": \"1573\",\n" +
-                "    \"meta\": {\n" +
-                "        \"versionId\": \"1\",\n" +
-                "        \"lastUpdated\": \"2023-05-25T23:02:05.041+10:00\"\n" +
-                "    },\n" +
-                "    \"status\": \"in-progress\",\n" +
-                "    \"medicationReference\": {\n" +
-                "        \"reference\": \"Medication/1538\",\n" +
-                "        \"display\": \"Vancomycin Hydrochloride (VANCOMYCIN HYDROCHLORIDE)\"\n" +
-                "    },\n" +
-                "    \"subject\": {\n" +
-                "        \"reference\": \"Patient/1535\",\n" +
-                "        \"display\": \"VD-Patient-Test\"\n" +
-                "    },\n" +
-                "    \"performer\": [\n" +
-                "        {\n" +
-                "            \"actor\": {\n" +
-                "                \"reference\": \"Practitioner/1522\",\n" +
-                "                \"display\": \"Jenny\"\n" +
-                "            }\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"quantity\": {\n" +
-                "        \"value\": 3,\n" +
-                "        \"system\": \"http://snomed.info/sct\",\n" +
-                "        \"code\": \"415818006\"\n" +
-                "    },\n" +
-                "    \"whenPrepared\": \"2023-05-25T10:20:00Z\"\n" +
-                "}");
-
-
-        JSONObject jsData = JSON.parseObject(data);
-
-        templates.getJSONObject("subject").put("reference", "Patient/" + jsData.get("patientId"));
-        templates.getJSONObject("subject").put("display", jsData.get("patientName"));
-
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" +jsData.get("practitionerId"));
-       templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
-
-//        JSONArray performerArray = templates.getJSONArray("performer");
-//        JSONObject actorObj = performerArray.getJSONObject(0).getJSONObject("actor");
-//        actorObj.put("reference", "Practitioner/" + jsData.get("practitionerId"));
-//        actorObj.put("display", jsData.get("practitionerName"));
-//        performerArray.set(0, actorObj);
-//        templates.put("performer", performerArray);
-
-        templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
-        templates.getJSONObject("medicationReference").put("display", jsData.get("medicationName"));
-
-        templates.put("status", jsData.get("status"));
-        templates.put("whenPrepared", (new Date()).toString());
-        templates.getJSONObject("quantity").put("value",jsData.get("quantity"));
-
         try {
-            rel = fhirService.update(resource, id, templates.toString());
+            rel = fhirService.update(resource, id, data);
         } catch (Exception e) {
             e.printStackTrace();
 
