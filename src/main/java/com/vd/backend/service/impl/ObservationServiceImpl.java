@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.ObservationService;
 import com.vd.backend.service.ProfilesService;
+import com.vd.backend.util.JsonUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -44,18 +46,18 @@ public class ObservationServiceImpl implements ObservationService {
 
         JSONArray rel = new JSONArray();
 
-        JSONArray entries = JSON.parseObject(data).getJSONArray("entry");
+        JSONArray resources = JSON.parseArray(data);
 
         // time -> (height, weight, blood, heart)
         Map<String, JSONObject> timeBodyMap = new HashMap<>();
 
-        for (int i=0; entries != null && i < entries.size(); i++) {
+        for (int i=0; resources != null && i < resources.size(); i++) {
 
             String effectiveDateTime = null, type = null;
             Double value;
 
             try {
-                JSONObject resource = (JSONObject) entries.getJSONObject(i).get("resource");
+                JSONObject resource = (JSONObject) resources.getJSONObject(i);
                 JSONObject typeInfo = (JSONObject) resource
                         .getJSONObject("code")
                         .getJSONArray("coding").get(0);
@@ -63,7 +65,12 @@ public class ObservationServiceImpl implements ObservationService {
                 effectiveDateTime = resource.getString("effectiveDateTime");
                 value = resource.getJSONObject("valueQuantity").getDoubleValue("value");
 
+
+                log.info("resource: {}, type: {}", resource.toJSONString(), type);
+
+
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("The observation {} is not supported for visuliation", i);
                 continue;
             }
@@ -124,7 +131,10 @@ public class ObservationServiceImpl implements ObservationService {
                 observationTemplate.getJSONObject("subject").put("reference", resource + "/" + id);
                 observationTemplate.getJSONObject("valueQuantity").put("value", inputData.getJSONObject(type).get("value"));
                 observationTemplate.getJSONObject("valueQuantity").put("unit", (String) inputData.getJSONObject(type).get("unit"));
-                observationTemplate.getJSONObject("code").getJSONArray("coding").getJSONObject(0).put("display", type);
+
+                observationTemplate.put("code", JsonUtil.getFakeCode(typeMap.keySet().stream().filter(k -> {
+                    return typeMap.get(k).equals(type);
+                }).collect(Collectors.toList()).get(0)));
 
                 observationTemplate.put("effectiveDateTime", (String) inputData.get("effectiveDateTime"));
 
@@ -138,6 +148,8 @@ public class ObservationServiceImpl implements ObservationService {
                 String fhirData = observationTemplate.toString();
 
                 String rel = profilesService.add("Observation", fhirData).getData();
+
+                log.info("Add observation: {}", fhirData);
 
                 rels.add(rel);
 
@@ -172,7 +184,7 @@ public class ObservationServiceImpl implements ObservationService {
 
         element.put("system", "http://loinc.org");
         element.put("code", "29463-7");
-        element.put("display", "N/A");                         // Should be changed
+        element.put("display", "N/A");                           // Should be changed
         codingArray.add(element);
         codeObject.put("coding", codingArray);
 
@@ -190,6 +202,7 @@ public class ObservationServiceImpl implements ObservationService {
         valueQuantityObject.put("unit", "N/A");
         observationTemplate.put("valueQuantity", valueQuantityObject);
     }
+
 
 
 }

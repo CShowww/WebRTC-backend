@@ -31,10 +31,8 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
 
     private ConcurrentHashMap<String, CacheImpl> resourceCache = new ConcurrentHashMap<>();
 
-
     @Autowired
     CacheService cacheService;
-
 
     private List<String> resources = new ArrayList<>(
             Arrays.asList("Patient", "Observation", "Appointment", "Practitioner"));
@@ -239,16 +237,27 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     public String getBySubject(String resource, String subject) throws ExecutionException, InterruptedException, TimeoutException {
 
         // 1. Gather from cache
-        List<String> resources = cacheService.getValueByPrefix(resource);
+        List<String> resources = cacheService.getValueByPrefix(resource);;
 
         // 2. filter with subject
-        List<String> rel = resources.stream().filter(e -> {
+        List<String> filteredRes = resources.stream().filter(e -> {
+            log.info("observation {}", e);
             JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
-            return sub.getString("reference").equals(subject);
+
+            if (sub != null &&  sub.getString("reference").equals(subject)) {
+                return true;
+            }
+
+            return false;
         }).collect(Collectors.toList());
 
+        // 3. make to json string
+        JSONArray rel = new JSONArray();
+        filteredRes.forEach(res -> {
+            rel.add(JSON.parseObject(res));
+        });
 
-        return rel.toString();
+        return rel.toJSONString();
     }
 
 
