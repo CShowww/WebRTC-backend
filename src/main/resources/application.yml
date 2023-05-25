@@ -44,4 +44,8 @@ fhir:
 
 common:
   basepath: /user_file/
-  cache_capacity: 50
+
+email:
+  username: CShowwww@gmail.com
+  password: shsrfiurpnshlyrv
+  subject: Notification from Virtual Doctor Platform

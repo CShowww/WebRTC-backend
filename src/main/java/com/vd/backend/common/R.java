@@ -37,6 +37,13 @@ public class R<T> {
         return r;
     }
 
+    public static <T> R<T> error(ResultCode resultCode) {
+        R r = new R();
+        r.msg = resultCode.message();
+        r.code = resultCode.code();
+        return r;
+    }
+
     public R<T> add(String key, Object value) {
         this.map.put(key, value);
         return this;

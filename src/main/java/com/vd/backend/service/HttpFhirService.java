@@ -34,6 +34,9 @@ public interface HttpFhirService {
     public String getBySubject(@RequestParam("subject") String subject);
 
     @RequestMapping(value = "/{resource}?practitioner={id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
-    public String getById(@PathVariable String resource, @PathVariable String id);
+    public String getByPractitionerId(@PathVariable String resource, @PathVariable String id);
+
+    @RequestMapping(value = "/{resource}?patient={id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
+    public String getByPatientId(@PathVariable String resource, @PathVariable String id);
 
 }

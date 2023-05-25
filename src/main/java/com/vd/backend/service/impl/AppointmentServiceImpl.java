@@ -3,10 +3,14 @@ package com.vd.backend.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.vd.backend.common.R;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
+import com.vd.backend.service.FhirService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +24,10 @@ import java.util.Locale;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
+
+    @Autowired
+    FhirService fhirService;
+
     @Override
     public String Json2String(JSONObject jsonObject) {
         JSONObject outputJson = new JSONObject();
@@ -29,6 +37,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String start = LocalDateTime.parse(jsonObject.getString("start"), inputFormatter).format(outputFormatter);
         String end = LocalDateTime.parse(jsonObject.getString("end"), inputFormatter).format(outputFormatter);
+        String description = jsonObject.getString("description");
         String patientId= "", patientName= "", practitionerId = "", practitionerName = "";
         JSONArray participant = jsonObject.getJSONArray("participant");
         for (int i = 0; i < participant.size(); i++) {
@@ -51,6 +60,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         outputJson.put("practitionerName", practitionerName);
         outputJson.put("patientId", patientId);
         outputJson.put("patientName", patientName);
+        outputJson.put("description", description);
 
         return outputJson.toString();
     }
@@ -64,6 +74,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         jsonObject.put("start", LocalDateTime.parse(appointment.getStartTime(), inputFormatter).atOffset(ZoneOffset.UTC).format(outputFormatter));
         jsonObject.put("end", LocalDateTime.parse(appointment.getEndTime(), inputFormatter).atOffset(ZoneOffset.UTC).format(outputFormatter));
         jsonObject.put("status", appointment.getStatus());
+        if(appointment.getDescription()!=null){
+            jsonObject.put("description", appointment.getDescription());
+        }else{
+            jsonObject.put("description", "No description");
+        }
 
         JSONArray participant = new JSONArray();
 
@@ -101,4 +116,54 @@ public class AppointmentServiceImpl implements AppointmentService {
         System.out.println(jsonObject.toString());
         return jsonObject;
     }
+
+    @Override
+    public int getUserInfoById(Appointment appointment) {
+        String patientName = "", practitionerName = "";
+        try {
+            String patient = fhirService.get("Patient", appointment.getPatientId());
+            JSONObject name = JSON.parseObject(patient).getJSONArray("name").getJSONObject(0);
+            String givenName = name.getJSONArray("given").getString(0);
+            String familyName = name.getString("family");
+            patientName = givenName + " " + familyName;
+            appointment.setPatientName(patientName);
+
+            JSONArray telecom = JSON.parseObject(patient).getJSONArray("telecom");
+            for(int i = 0; i<telecom.size(); i++){
+                if(telecom.getJSONObject(i).getString("system")!=null &&
+                        telecom.getJSONObject(i).getString("system").equals("email")){
+                    appointment.setPatientEmail(telecom.getJSONObject(i).getString("value"));
+                }
+            }
+            if (appointment.getPatientEmail()==null) return -1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        try {
+            String practitioner = fhirService.get("Practitioner", appointment.getPractitionerId());
+            JSONObject name = JSON.parseObject(practitioner).getJSONArray("name").getJSONObject(0);
+            String givenName = name.getJSONArray("given").getString(0);
+            String familyName = name.getString("family");
+            practitionerName = givenName + " " + familyName;
+            appointment.setPractitionerName(practitionerName);
+
+            JSONArray telecom = JSON.parseObject(practitioner).getJSONArray("telecom");
+            for(int i = 0; i<telecom.size(); i++){
+                if(telecom.getJSONObject(i).getString("system")!=null &&
+                        telecom.getJSONObject(i).getString("system").equals("email")){
+                    appointment.setPatientEmail(telecom.getJSONObject(i).getString("value"));
+                }
+            }
+            if (appointment.getPatientEmail()==null) return -1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        return 0;
+    }
+
+
 }
