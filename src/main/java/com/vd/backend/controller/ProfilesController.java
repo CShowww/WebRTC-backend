@@ -35,8 +35,12 @@ public class ProfilesController {
     @GetMapping("/{resource}/{id}")
     public R<String> get(@PathVariable String resource, @PathVariable String id) throws ExecutionException, InterruptedException {
 
-        return profilesService.add(resource, id);
+        return profilesService.get(resource, id);
     };
+
+
+
+
 
 
     /**
@@ -75,7 +79,6 @@ public class ProfilesController {
      * @param data
      * @return
      */
-    @CachePut
     @PostMapping("/{resource}")
     public R<String> add(@PathVariable String resource, @RequestBody String data) throws ExecutionException, InterruptedException {
 

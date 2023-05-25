@@ -2,28 +2,36 @@ package com.vd.backend.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
+import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.ProfilesService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
+import java.util.List;
 
 /**
  * Basic CURD operation of fhir service
  */
+
+@Slf4j
 @Service
-@CacheConfig(cacheNames = "profiles")
 public class ProfilesServiceImpl implements ProfilesService {
 
-    // TODO: cache it
     @Autowired
     HttpFhirService httpFhirService;
+
+    @Autowired
+    AsynFhirService asynFhirService;
+
 
     /**
      * Add a fhir resource
@@ -36,15 +44,18 @@ public class ProfilesServiceImpl implements ProfilesService {
     public R<String> get(String resource, String id) {
         String rel = null;
         try{
-            rel = httpFhirService.get(resource, id);
+            rel = asynFhirService.get(resource, id);
         } catch (Exception e) {
 
             e.printStackTrace();
             rel = e.getMessage();
             return R.error(rel);
         }
+
         return R.success(rel);
     }
+
+
 
     /**
      * Add fhir service
@@ -55,31 +66,17 @@ public class ProfilesServiceImpl implements ProfilesService {
 
     @Override
     public R<String> add(String resource, String data) throws ExecutionException, InterruptedException {
-        Callable<String> addToFhir = new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                String rel = "";
-                try {
-                    rel = httpFhirService.add(resource, data);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                return rel;
-            }
-        };
-        FutureTask<String> futureTask = new FutureTask<>(addToFhir);
-        Thread thread = new Thread(futureTask);
-        thread.start();
-
-        // Obtain result
-        String rel = futureTask.get();
-        JSONObject jsonObject = JSONObject.parseObject(rel);
-        String resourceId = jsonObject.getString("id");
-
-
+        String rel = "";
+        try {
+            rel = asynFhirService.add(resource, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.error(e.getMessage());
+        }
         return R.success(rel);
     }
+
+
 
     /**
      * Delete fhir resource
@@ -91,7 +88,7 @@ public class ProfilesServiceImpl implements ProfilesService {
     public R<String> delete(String resource, String id) {
         String rel = "";
         try {
-            rel = httpFhirService.delete(resource, id);
+            rel = asynFhirService.delete(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -101,6 +98,13 @@ public class ProfilesServiceImpl implements ProfilesService {
         }
         return R.success(rel);
     }
+
+
+
+
+
+
+
 
     /**
      * Update a fhir resource with id
@@ -113,7 +117,7 @@ public class ProfilesServiceImpl implements ProfilesService {
     public R<String> update(String resource, String id, String data) {
         String rel = "";
         try {
-            rel = httpFhirService.update(resource, id, data);
+            rel = asynFhirService.update(resource, id, data);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -131,17 +135,27 @@ public class ProfilesServiceImpl implements ProfilesService {
      */
     @Override
     public R<String> getAll(String resource) {
-        String rel = "";
+        List<String> resources = new ArrayList<>();
+        String rel = null;
+
         try {
-            rel = httpFhirService.getAll(resource);
+            resources = asynFhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             rel = e.getMessage();
-
             return R.error(rel);
         }
+
+        for (String res : resources) {
+            // TODO: get all logic
+        }
+
+
         return R.success(rel);
     }
+
+
+
 
     /**
      *

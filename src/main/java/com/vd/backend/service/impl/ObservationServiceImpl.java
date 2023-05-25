@@ -152,8 +152,6 @@ public class ObservationServiceImpl implements ObservationService {
 
 
 
-
-
     /**
      * An Observation resource template which can be used to
      * format data from frontend
@@ -169,15 +167,15 @@ public class ObservationServiceImpl implements ObservationService {
         JSONObject codingObject = new JSONObject();
         codingObject.put("system", "http://loinc.org");
         codingObject.put("code", "29463-7");
-        codingObject.put("display", "N/A");                 // Should be changed
+        codingObject.put("display", "N/A");                         // Should be changed
         codeObject.put("coding", codingObject);
         observationTemplate.put("code", codeObject);
 
         JSONObject subjectObject = new JSONObject();
-        subjectObject.put("reference", "N/A");             // Should be changed
+        subjectObject.put("reference", "N/A");                      // Should be changed
         observationTemplate.put("subject", subjectObject);
 
-        observationTemplate.put("effectiveDateTime", "N/A"); // Should be changed
+        observationTemplate.put("effectiveDateTime", "N/A");        // Should be changed
 
         JSONObject valueQuantityObject = new JSONObject();          // Should be changed
         valueQuantityObject.put("value", -1);

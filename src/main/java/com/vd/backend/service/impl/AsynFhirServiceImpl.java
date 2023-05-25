@@ -1,11 +1,14 @@
 package com.vd.backend.service.impl;
 
+import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.vd.backend.common.Status;
 import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.CacheImpl;
+import com.vd.backend.util.JsonUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +48,8 @@ public class AsynFhirServiceImpl implements AsynFhirService {
      */
     @Override
     public String add(String resource, String data) throws ExecutionException, InterruptedException {
-        // Add to fhir server and obtain resource id
+
+        // add to fhir and get allocated resource id
         Callable<String> addToFhir = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -54,6 +58,7 @@ public class AsynFhirServiceImpl implements AsynFhirService {
                     rel = httpFhirService.add(resource, data);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    rel = e.getMessage();
                 }
 
                 return rel;
@@ -63,42 +68,89 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         Thread thread = new Thread(futureTask);
         thread.start();
 
+        // Obtain result from fhir
         String rel = futureTask.get();
-        String id = JSONObject.parseObject(rel).getString("id");
 
-        // update cache
-        cacheService.set(getCacheKey(resource, id), data);
+
+        if (JsonUtil.isResource(rel)) {
+            String id = JSONObject.parseObject(rel).getString("id");
+            log.info("Add to fhir service, allocated resource id: {}", id);
+            // update cache
+            cacheService.set(getCacheKey(resource, id), data);
+        }
+
 
         return rel;
     }
 
+    /**
+     *
+     * @param resource
+     * @param id
+     * @return
+     */
     @Override
-    public String delete() {
-        return null;
-    }
+    public String delete(String resource, String id) {
 
-    @Override
-    public String update(String resource, String id, String data) {
+        // Remove from cache
+        if (cacheService.hasKey(getCacheKey(resource, id))) {
+            cacheService.del(getCacheKey(resource, id));
+        }
 
-        // update cache
-        cacheService.set(getCacheKey(resource, id), data);
-
-        // Async update fhir service
-        Thread updateToFhir = new Thread(new Runnable() {
+        // Remove from fhir server
+        Thread removeFromFhir = new Thread(new Runnable() {
             @Override
             public void run() {
                 String rel = "";
                 try {
-                    rel = httpFhirService.update(resource, id, data);
+                    rel = httpFhirService.delete(resource, id);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
 
+
+
+        removeFromFhir.start();
+
+        return "remove resource: " + resource + " id: " + id;
+    }
+
+    @Override
+    public String update(String resource, String id, String data) {
+        // backup old data
+        String oldData = cacheService.get(getCacheKey(resource, id));
+
+        // update cache
+        cacheService.set(getCacheKey(resource, id), data);
+
+
+
+
+        // Async update fhir service
+        Thread updateToFhir = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String rel = null;
+                try {
+                    rel = httpFhirService.update(resource, id, data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    rel = e.getMessage();
+                }
+
+                // if fail, rollback to old data
+                if (!JsonUtil.isResource(rel)) {
+                    cacheService.set(getCacheKey(resource, id), oldData);
+                }
+            }
+
+        });
+
         updateToFhir.start();
 
-        return "Asyn updating";
+        return "update " + resource + " " + id;
     }
 
     /**
@@ -110,7 +162,8 @@ public class AsynFhirServiceImpl implements AsynFhirService {
      * @throws InterruptedException
      */
     @Override
-    public String get(String resource, String id) throws ExecutionException, InterruptedException {
+    public String get(String resource, String id) throws ExecutionException, InterruptedException, TimeoutException {
+
         Callable<String> getFromFhir = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -119,44 +172,67 @@ public class AsynFhirServiceImpl implements AsynFhirService {
                     rel = httpFhirService.get(resource, id);
                 } catch (Exception e) {
                     e.printStackTrace();
+
+                    rel = e.getMessage();
                 }
                 return rel;
             }
         };
 
         FutureTask<String> task = new FutureTask<>(getFromFhir);
+        Thread t = new Thread(task);
+        t.start();
+
+
+        // Obtain result
         String rel = "";
-
-        // Get from database if not exist
-
+        // Get from fhir database if not exist and update cache if success
         if (cacheService.hasKey(getCacheKey(resource, id))) {
             rel = cacheService.get(getCacheKey(resource, id));
         } else {
-            rel = task.get();
-            this.add(resource, rel);
+            rel = task.get(3000, TimeUnit.MILLISECONDS);
+            if (JsonUtil.isResource(rel)) {
+                cacheService.set(getCacheKey(resource, id), rel);
+            }
         }
 
         return rel;
     }
 
+
+
+
+
     @Override
-    public String getAll(String resource) {
-        Thread getAllFromFhir = new Thread(new Runnable() {
+    public List<String> getAll(String resource) {
+        // update cache for consistent
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                String rel = "";
                 try {
-                    rel = httpFhirService.getAll(resource);
+                    String bundle = httpFhirService.getAll(resource);
+                    loadToCache(bundle, resource);
                 } catch (Exception e) {
+                    log.info("Calling remote fhir service fail");
                     e.printStackTrace();
                 }
-                // TODO update cache
             }
         });
+        t.start();
 
-        String rel = resourceCache.get(resource).toString();
-        return rel;
+
+        // Get from cache
+        List<String> resources = cacheService.getValueByPrefix(resource);
+        log.info("Resouce: {}", resources);
+
+        return resources;
     }
+
+
+
+
+
+
 
 
     /**
@@ -176,12 +252,7 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         }
     }
 
-
-
-
     private void loadToCache(String bundle, String resource) {
-        // cache bundle data
-        cacheService.set(getCacheKey(resource, "bundle"), bundle);
 
         // json process
         JSONObject jsonObject = JSONObject.parseObject(bundle);

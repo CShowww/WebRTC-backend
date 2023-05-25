@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.List;
+
 @Service
 public class RedisCacheService implements CacheService {
 
@@ -30,5 +33,16 @@ public class RedisCacheService implements CacheService {
     public Boolean hasKey(String key) {
         return redisTemplate.hasKey(key);
     }
+
+    @Override
+    public List<String> getValueByPrefix(String keyPrefix) {
+
+        Set<String> keys = redisTemplate.keys(keyPrefix + "*");
+
+        List<String> values = redisTemplate.opsForValue().multiGet(keys);
+
+        return values;
+    }
+
 
 }
