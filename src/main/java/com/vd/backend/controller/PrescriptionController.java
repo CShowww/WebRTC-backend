@@ -55,7 +55,7 @@ public class PrescriptionController {
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; entry != null && i < entry.size(); i++) {
+        for (int i = 0; entry.size() != 0 && i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
@@ -136,10 +136,10 @@ public class PrescriptionController {
 
         JSONObject jsData = JSON.parseObject(data);
 
-        templates.getJSONObject("subject").put("reference", jsData.get("Patient/" + "patientId"));
+        templates.getJSONObject("subject").put("reference", "Patient/" + jsData.get("patientId"));
         templates.getJSONObject("subject").put("display", jsData.get("patientName"));
 
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", jsData.get("practitionerId"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" + jsData.get("practitionerId"));
         templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get("practitionerName"));
 
         templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
@@ -157,7 +157,11 @@ public class PrescriptionController {
             return R.error(e.getMessage());
         }
 
+        JSONObject jsonObject = JSONObject.parseObject(rel);
+        log.info(jsonObject.toString() +" " + jsonObject.getObject("id", String.class));
+        String pId = jsonObject.getString("id");
         R<String> r = R.success(rel);
+        r.setMsg(pId);
         return r;
     }
 
@@ -201,11 +205,11 @@ public class PrescriptionController {
 
         JSONObject jsData = JSON.parseObject(data);
 
-        templates.getJSONObject("subject").put("reference", jsData.get("patientId"));
-        templates.getJSONObject("subject").put("display", jsData.get("Patient/" + "patientName"));
+        templates.getJSONObject("subject").put("reference", "Patient/" + jsData.get("patientId"));
+        templates.getJSONObject("subject").put("display", jsData.get("patientName"));
 
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", jsData.get("practitionerId"));
-        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get("Practitioner/" + "practitionerName"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" +jsData.get("practitionerId"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
 
         templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
         templates.getJSONObject("medicationReference").put("display", jsData.get("medicationName"));
@@ -222,8 +226,7 @@ public class PrescriptionController {
             return R.error(e.getMessage());
         }
 
-        R<String> r = R.success(rel);
-        return r;
+        return R.success(rel);
     }
 
 
