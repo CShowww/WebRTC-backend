@@ -44,3 +44,19 @@ email:
   username: CShowwww@gmail.com
   password: shsrfiurpnshlyrv
   subject: Notification from Virtual Doctor Platform
+
+keycloak:
+  # ?????public?client
+  public-client: true
+  # keycloak???
+  auth-server-url: https://keycloak-uom2.comp90082-2023.vsbox.dev/auth
+  # keycloak??realm
+  realm: master
+  # client ID
+  resource: Blue-ring-h1
+  # ????
+  securityConstraints:
+    - securityCollections:
+        - name: common user
+          patterns:
+            - /*

@@ -3,8 +3,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.FhirService;
-import io.micrometer.observation.Observation;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +15,8 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import com.alibaba.fastjson.JSON;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
