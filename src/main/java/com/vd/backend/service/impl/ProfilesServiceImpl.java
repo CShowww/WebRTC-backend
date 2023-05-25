@@ -28,9 +28,11 @@ import java.util.List;
 @Service
 public class ProfilesServiceImpl implements ProfilesService {
 
+    // Sync method, suffer from latency of fhir server
     @Autowired
     HttpFhirService httpFhirService;
 
+    // Async method, using cache
     @Autowired
     AsynFhirService asynFhirService;
 
@@ -56,8 +58,6 @@ public class ProfilesServiceImpl implements ProfilesService {
 
         return R.success(rel);
     }
-
-
 
     /**
      * Add fhir service
@@ -108,6 +108,10 @@ public class ProfilesServiceImpl implements ProfilesService {
 
 
 
+
+
+
+
     /**
      * Update a fhir resource with id
      * @param resource
@@ -150,22 +154,19 @@ public class ProfilesServiceImpl implements ProfilesService {
 
         // Transfer to front end required data format
         JSONArray info = new JSONArray();
+
         for (String s : resources) {
             JSONObject res = JSON.parseObject(s);
-
-            log.info("res: {}", res);
-
             String family = "", email = "", given = "", id = "";
-
             JSONObject name = res.getJSONArray("name")
                     .getJSONObject(0);
 
             for (Object str: name.getJSONArray("given")) {
                 given += (String) str + " ";
             }
+
             family = name.getString("family");
             id = res.getString("id");
-
 
             JSONArray telecom = res.getJSONArray("telecom");
             for (int j = 0; j < telecom.size(); j++) {
@@ -175,13 +176,14 @@ public class ProfilesServiceImpl implements ProfilesService {
                     email = t.getString("value");
                 }
             }
-            JSONObject profliesInfo = new JSONObject();
-            profliesInfo.put("family", family);
-            profliesInfo.put("given", given);
-            profliesInfo.put("contact", email);
-            profliesInfo.put("id", id);
+            JSONObject profilesInfo = new JSONObject();
+            profilesInfo.put("family", family);
+            profilesInfo.put("given", given);
+            profilesInfo.put("contact", email);
+            profilesInfo.put("id", id);
 
-            info.add(profliesInfo);
+
+            info.add(profilesInfo);
         }
 
         return R.success(info.toString());

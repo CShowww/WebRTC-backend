@@ -9,7 +9,8 @@ import com.vd.backend.common.ResultCode;
 import com.vd.backend.entity.bo.Connector;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
-import com.vd.backend.service.FhirService;
+
+import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.EmailSender;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ import java.time.format.DateTimeFormatter;
 public class AppointmentController {
 
     @Autowired
-    private FhirService fhirService;
+    private HttpFhirService fhirService;
 
     @Autowired
     private AppointmentService appointmentService;

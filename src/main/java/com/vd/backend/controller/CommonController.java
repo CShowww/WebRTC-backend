@@ -58,7 +58,6 @@ public class CommonController {
                 e.printStackTrace();
             }
         }
-
         return R.success();
     }
 

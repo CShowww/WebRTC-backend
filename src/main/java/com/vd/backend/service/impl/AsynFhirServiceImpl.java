@@ -3,7 +3,6 @@ package com.vd.backend.service.impl;
 import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.vd.backend.common.Status;
 import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
@@ -76,7 +75,7 @@ public class AsynFhirServiceImpl implements AsynFhirService {
             String id = JSONObject.parseObject(rel).getString("id");
             log.info("Add to fhir service, allocated resource id: {}", id);
             // update cache
-            cacheService.set(getCacheKey(resource, id), data);
+            cacheService.set(getCacheKey(resource, id), rel);
         }
 
 
@@ -203,22 +202,22 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     @Override
     public List<String> getAll(String resource) {
         // update cache for consistent
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String bundle = httpFhirService.getAll(resource);
-                    loadToCache(bundle, resource);
-                } catch (Exception e) {
-                    log.info("Calling remote fhir service fail");
-                    e.printStackTrace();
-                }
-            }
-        });
-        t.start();
+//        Thread t = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    String bundle = httpFhirService.getAll(resource);
+//                    loadToCache(bundle, resource);
+//                } catch (Exception e) {
+//                    log.info("Calling remote fhir service fail");
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//        t.start();
+
         // Get from cache
         List<String> resources = cacheService.getValueByPrefix(resource);
-        log.info("Resouce: {}", resources);
 
         return resources;
     }
