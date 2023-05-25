@@ -1,6 +1,5 @@
 package com.vd.backend.service.impl;
 
-import com.alibaba.druid.support.spring.stat.annotation.Stat;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.service.AsynFhirService;
@@ -12,6 +11,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,13 +71,14 @@ public class AsynFhirServiceImpl implements AsynFhirService {
         // Obtain result from fhir
         String rel = futureTask.get();
 
-
         if (JsonUtil.isResource(rel)) {
             String id = JSONObject.parseObject(rel).getString("id");
             log.info("Add to fhir service, allocated resource id: {}", id);
             // update cache
             cacheService.set(getCacheKey(resource, id), rel);
+
         }
+
 
 
         return rel;
@@ -123,8 +125,6 @@ public class AsynFhirServiceImpl implements AsynFhirService {
 
         // update cache
         cacheService.set(getCacheKey(resource, id), data);
-
-
 
 
         // Async update fhir service
@@ -201,28 +201,75 @@ public class AsynFhirServiceImpl implements AsynFhirService {
 
     @Override
     public List<String> getAll(String resource) {
-        // update cache for consistent
-//        Thread t = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    String bundle = httpFhirService.getAll(resource);
-//                    loadToCache(bundle, resource);
-//                } catch (Exception e) {
-//                    log.info("Calling remote fhir service fail");
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//        t.start();
-
         // Get from cache
         List<String> resources = cacheService.getValueByPrefix(resource);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String rel = null;
+                try {
+                    rel = httpFhirService.getAll(resource);
+                    loadToCache(rel, resource);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        t.start();
 
         return resources;
     }
 
+    /**
+     * TODO uncache: do not use fhir
+     * @param resource
+     * @param subject
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    @Override
+    public String getBySubject(String resource, String subject) throws ExecutionException, InterruptedException, TimeoutException {
+        // Call fhir server
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                String bundle = "";
+                try {
+                    bundle = httpFhirService.getBySubject(resource, subject);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    bundle = e.getMessage();
+                }
+                return bundle;
+            }
+        };
 
+        FutureTask<String> future = new FutureTask<>(task);
+        Thread t = new Thread(future);
+        t.start();
+
+        // Obtain result
+        String rel = rel = future.get(3000, TimeUnit.MILLISECONDS);
+        if (JsonUtil.isResource(rel)) {
+            cacheService.set(getCacheKey(resource, subject), rel);
+        }
+
+        return rel;
+    }
+
+
+    @Override
+    public String getByPractitionerId(String resource, String id) {
+        return null;
+    }
+
+    @Override
+    public String getByPatientId(String resource, String id) {
+        return null;
+    }
 
 
     /**

@@ -20,6 +20,6 @@ public interface ProfilesService {
 
     R<String> getAll(String resource);
 
-    R<String> getBySubject(String subject);
+    R<String> getBySubject(String resource, String subject);
 
 }

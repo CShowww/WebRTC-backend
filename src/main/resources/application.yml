@@ -7,6 +7,7 @@ spring:
     url: jdbc:mysql://localhost/digital_health?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 123456
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -19,7 +20,6 @@ spring:
     host: 127.0.0.1
     database: 0
     port: 6379
-
 
 mybatis-plus:
   configuration:

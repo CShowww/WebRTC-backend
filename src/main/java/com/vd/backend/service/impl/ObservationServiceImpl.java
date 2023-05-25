@@ -25,7 +25,7 @@ public class ObservationServiceImpl implements ObservationService {
             "Body-Weight","weight",
             "Body-Height", "height",
             "Body-Blood", "blood",
-            "Body-Pressure", "pressure"
+            "Body-Heart", "heart"
     );
 
     private JSONObject observationTemplate;
@@ -118,12 +118,14 @@ public class ObservationServiceImpl implements ObservationService {
 
         List<String> rels = new ArrayList<>();
 
-        typeMap.values().forEach(val -> {
+        typeMap.values().forEach(type -> {
             try {
                 // make fhir resource data
                 observationTemplate.getJSONObject("subject").put("reference", resource + "/" + id);
-                observationTemplate.getJSONObject("valueQuantity").put("value", inputData.getJSONObject(val).get("value"));
-                observationTemplate.getJSONObject("valueQuantity").put("unit", (String) inputData.getJSONObject(val).get("unit"));
+                observationTemplate.getJSONObject("valueQuantity").put("value", inputData.getJSONObject(type).get("value"));
+                observationTemplate.getJSONObject("valueQuantity").put("unit", (String) inputData.getJSONObject(type).get("unit"));
+                observationTemplate.getJSONObject("code").getJSONArray("coding").getJSONObject(0).put("display", type);
+
                 observationTemplate.put("effectiveDateTime", (String) inputData.get("effectiveDateTime"));
 
             } catch (Exception e) {
@@ -134,6 +136,7 @@ public class ObservationServiceImpl implements ObservationService {
             try {
                 // send to fhir server
                 String fhirData = observationTemplate.toString();
+
                 String rel = profilesService.add("Observation", fhirData).getData();
 
                 rels.add(rel);
@@ -164,12 +167,17 @@ public class ObservationServiceImpl implements ObservationService {
         observationTemplate.put("status", "final");
 
         JSONObject codeObject = new JSONObject();
-        JSONObject codingObject = new JSONObject();
-        codingObject.put("system", "http://loinc.org");
-        codingObject.put("code", "29463-7");
-        codingObject.put("display", "N/A");                         // Should be changed
-        codeObject.put("coding", codingObject);
+        JSONArray codingArray = new JSONArray();
+        JSONObject element = new JSONObject();
+
+        element.put("system", "http://loinc.org");
+        element.put("code", "29463-7");
+        element.put("display", "N/A");                         // Should be changed
+        codingArray.add(element);
+        codeObject.put("coding", codingArray);
+
         observationTemplate.put("code", codeObject);
+
 
         JSONObject subjectObject = new JSONObject();
         subjectObject.put("reference", "N/A");                      // Should be changed
@@ -181,7 +189,6 @@ public class ObservationServiceImpl implements ObservationService {
         valueQuantityObject.put("value", -1);
         valueQuantityObject.put("unit", "N/A");
         observationTemplate.put("valueQuantity", valueQuantityObject);
-
     }
 
 

@@ -24,13 +24,13 @@ public class ObservationController {
 
     private final String resource = "Observation";
 
-    private final String subject = "Patient";
 
-    @GetMapping("/{id}")
-    public R<String> getSummary(@PathVariable String id) {
+    @GetMapping("/{subject}/{id}")
+    public R<String> getSummary( @PathVariable String subject, @PathVariable String id) {
 
         // 1. Get all observation with subject id
-        String bundle = profilesService.getBySubject(subject  + "/" + id).getData();
+        String bundle = profilesService.getBySubject(resource, subject  + "/" + id).getData();
+
 
         // 2. Formatting bundled data and return to frontend
         String formattedData = observationService.formatBundle(bundle);

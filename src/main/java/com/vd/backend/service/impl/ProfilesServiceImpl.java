@@ -101,17 +101,6 @@ public class ProfilesServiceImpl implements ProfilesService {
         return R.success(rel);
     }
 
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Update a fhir resource with id
      * @param resource
@@ -189,18 +178,16 @@ public class ProfilesServiceImpl implements ProfilesService {
         return R.success(info.toString());
     }
 
-
-
-
     /**
-     *
+     * TODO: cache it
      * @param subject
      * @return
      */
-    public R<String> getBySubject(String subject) {
+    public R<String> getBySubject(String resource, String subject) {
+
         String rel = "";
         try {
-            rel = httpFhirService.getBySubject(subject);
+            rel = asynFhirService.getBySubject(resource, subject);
         } catch (Exception e) {
             e.printStackTrace();
             rel = e.getMessage();
@@ -209,5 +196,7 @@ public class ProfilesServiceImpl implements ProfilesService {
         }
         return R.success(rel);
     }
+
+
 
 }
