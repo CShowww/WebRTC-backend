@@ -157,7 +157,11 @@ public class PrescriptionController {
             return R.error(e.getMessage());
         }
 
+        JSONObject jsonObject = JSONObject.parseObject(rel);
+        log.info(jsonObject.toString() +" " + jsonObject.getObject("id", String.class));
+        String pId = jsonObject.getString("id");
         R<String> r = R.success(rel);
+        r.setMsg(pId);
         return r;
     }
 
@@ -222,12 +226,7 @@ public class PrescriptionController {
             return R.error(e.getMessage());
         }
 
-        JSONObject jsonObject = JSONObject.parseObject(rel);
-        log.info(jsonObject.toString() +" " + jsonObject.getObject("id", String.class));
-        String pId = jsonObject.getString("id");
-        R<String> r = R.success(rel);
-        r.setMsg(pId);
-        return r;
+        return R.success(rel);
     }
 
 
