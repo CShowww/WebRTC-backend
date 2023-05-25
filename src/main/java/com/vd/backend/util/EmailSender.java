@@ -34,7 +34,7 @@ public class EmailSender {
         message = new MimeMessage(session);
     }
 
-    public void sendEmail(JSONObject data) {
+    public void sendEmail(JSONObject data) throws MessagingException {
         parseData(data);
         init();
         log.info(connector.toString());
@@ -45,13 +45,40 @@ public class EmailSender {
 
             send2Patient(contentForPatient);
             send2Practitioner(contentForPractitioner);
+
         }
         else if(connector.getType().equals("Update")){
             content = "The patient updated the appointment.";
+
             send2Practitioner(content);
         }
         else{
             content = "The practitioner cancelled the appointment.";
+
+            send2Patient(content);
+        }
+    }
+
+    public void sendEmail(Connector connector) throws MessagingException {
+        init();
+        log.info(connector.toString());
+
+        if(connector.getType().equals("Add")){
+            String contentForPractitioner = connector.getPatientName()+" made an appointment!";
+            String contentForPatient = "You have made the appointment successfully!";
+
+            send2Patient(contentForPatient);
+            send2Practitioner(contentForPractitioner);
+
+        }
+        else if(connector.getType().equals("Update")){
+            content = "The patient updated the appointment.";
+
+            send2Practitioner(content);
+        }
+        else{
+            content = "The practitioner cancelled the appointment.";
+
             send2Patient(content);
         }
     }
@@ -83,9 +110,8 @@ public class EmailSender {
 
     }
 
-    public void send2Patient(String content){
+    public void send2Patient(String content) throws MessagingException{
         log.info("Send email to patient, the content is {}",content);
-        try {
             message.setFrom(new InternetAddress("${email.username}"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(connector.getPatientEmail()));
             message.setSubject("Notification from Virtual Doctor Platform");
@@ -94,24 +120,18 @@ public class EmailSender {
             Transport.send(message);
 
             log.info("Send successfully!");
-        } catch (MessagingException e) {
-            log.info("Fail to send email." + e.getMessage());
-        }
     }
 
-    public void send2Practitioner(String content){
+    public void send2Practitioner(String content) throws MessagingException {
         log.info("Send email to practitioner, the content is {}",content);
-        try {
-            message.setFrom(new InternetAddress("${email.username}"));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(connector.getPractitionerEmail()));
-            message.setSubject("Notification from Virtual Doctor Platform");
-            message.setText(content);
 
-            Transport.send(message);
+        message.setFrom(new InternetAddress("${email.username}"));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(connector.getPractitionerEmail()));
+        message.setSubject("Notification from Virtual Doctor Platform");
+        message.setText(content);
 
-            log.info("Send successfully!");
-        } catch (MessagingException e) {
-            log.info("Fail to send email." + e.getMessage());
-        }
+        Transport.send(message);
+
+        log.info("Send successfully!");
     }
 }
