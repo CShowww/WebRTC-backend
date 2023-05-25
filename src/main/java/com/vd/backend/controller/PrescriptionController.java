@@ -6,24 +6,31 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.HttpFhirService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
 @Slf4j
 @RestController
-@RequestMapping("/fhir")
+@RequestMapping("/MedicationDispense")
+@CrossOrigin
 public class PrescriptionController {
 
+    @Autowired
     HttpFhirService fhirService;
-    @GetMapping("/MedicationDispense/{resource}/{id}")
-    public R<String> getPrescription(@PathVariable String id, @PathVariable String resource) {
+
+    String resource = "MedicationDispense";
+
+
+    @GetMapping("/{id}")
+    public R<String> getPrescription(@PathVariable String id) {
 
         log.info("Get {}/{}", resource, id);
 
         String rel = "";
         try{
-            rel = fhirService.get("MedicationDispense", id);
+            rel = fhirService.get(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -34,12 +41,12 @@ public class PrescriptionController {
     }
 
 
-    @GetMapping("/MedicationDispense/{resource}")
-    public R<String> getAllPrescription(@PathVariable String resource) {
+    @GetMapping()
+    public R<String> getAllPrescription() {
         log.info("Get all Prescription {}", resource);
         String rel = "";
         try {
-            rel = fhirService.getAll("MedicationDispense");
+            rel = fhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
@@ -89,8 +96,8 @@ public class PrescriptionController {
         return R.success(ans.toString());
     }
 
-    @PostMapping("/MedicationDispense/{resource}")
-    public R<String> addPrescription(@PathVariable String resource, @RequestBody String data) {
+    @PostMapping()
+    public R<String> addPrescription(@RequestBody String data) {
         log.info("Post {}", resource);
         String rel = "";
 
@@ -143,7 +150,7 @@ public class PrescriptionController {
         templates.getJSONObject("quantity").put("value",jsData.get("quantity"));
 
         try {
-            rel = fhirService.add("MedicationDispense", templates.toString());
+            rel = fhirService.add(resource, templates.toString());
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -154,8 +161,8 @@ public class PrescriptionController {
         return r;
     }
 
-    @PutMapping("/MedicationDispense/{resource}/{id}")
-    public R<String> updatePrescription(@PathVariable String resource, @PathVariable String id, @RequestBody String data) {
+    @PutMapping("/{id}")
+    public R<String> updatePrescription(@PathVariable String id, @RequestBody String data) {
         log.info("Update {}/{}", resource, id);
         String rel = "";
 
@@ -208,7 +215,7 @@ public class PrescriptionController {
         templates.getJSONObject("quantity").put("value",jsData.get("quantity"));
 
         try {
-            rel = fhirService.update("MedicationDispense", id, templates.toString());
+            rel = fhirService.update(resource, id, templates.toString());
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -220,12 +227,12 @@ public class PrescriptionController {
     }
 
 
-    @DeleteMapping("/MedicationDispense/{resource}/{id}")
-    public R<String> deletePrescription(@PathVariable String resource, @PathVariable String id) {
+    @DeleteMapping("/{id}")
+    public R<String> deletePrescription(@PathVariable String id) {
         log.info("Delete {}/{}", resource, id);
         String rel = "";
         try {
-            rel = fhirService.delete("MedicationDispense", id);
+            rel = fhirService.delete(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
 
