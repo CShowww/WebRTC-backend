@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
-import com.vd.backend.service.FhirService;
+import com.vd.backend.service.HttpFhirService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.Date;
 @RequestMapping("/fhir")
 public class PrescriptionController {
 
-    FhirService fhirService;
+    HttpFhirService fhirService;
     @GetMapping("/MedicationDispense/{resource}/{id}")
     public R<String> getPrescription(@PathVariable String id, @PathVariable String resource) {
 
