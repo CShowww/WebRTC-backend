@@ -147,4 +147,36 @@ public class PrescriptionController {
 
         return R.success(rel);
     }
+
+    @GetMapping("/Medication")
+    public R<String> getAllMedication() {
+        log.info("Get all Medication");
+        String rel = "";
+        try {
+            rel = fhirService.getAll("Medication");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.error("Call fhir server fail");
+        }
+        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
+
+        JSONArray ans = new JSONArray();
+
+        for (int i = 0; entry != null && i < entry.size(); i++) {
+            JSONObject jsonObject = new JSONObject();
+
+            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+
+            String id = res.getString("id"); //1
+
+            JSONObject JSName = (JSONObject) res.getJSONObject("code").getJSONArray("coding").get(0);
+            String name = JSName.getString("display");
+            jsonObject.put("id", id);
+            jsonObject.put("name", name);
+
+            ans.add(jsonObject);
+        }
+
+        return R.success(ans.toString());
+    }
 }
