@@ -1,6 +1,7 @@
 package com.vd.backend.service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CacheService {
 
@@ -12,6 +13,6 @@ public interface CacheService {
 
     Boolean hasKey(String key);
 
-    List<String> getValueByPrefix(String keyPrefix);
+    Map<String, String> getValueByPrefix(String keyPrefix);
 
 }

@@ -73,9 +73,9 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
         if (JsonUtil.isResource(rel)) {
             String id = JSONObject.parseObject(rel).getString("id");
             log.info("Add to fhir service, allocated resource id: {}", id);
+
             // update cache
             cacheService.set(getCacheKey(resource, id), rel);
-            // update related
         }
         return rel;
     }
@@ -193,7 +193,8 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     @Override
     public List<String> getAll(String resource) {
         // Get from cache
-        List<String> resources = cacheService.getValueByPrefix(resource);
+        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
+
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -225,7 +226,7 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     public String getBySubject(String resource, String subject) throws ExecutionException, InterruptedException, TimeoutException {
 
         // 1. Gather from cache
-        List<String> resources = cacheService.getValueByPrefix(resource);;
+        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
 
         // 2. filter with subject
         List<String> filteredRes = resources.stream().filter(e -> {

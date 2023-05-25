@@ -5,8 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RedisCacheService implements CacheService {
@@ -33,13 +32,22 @@ public class RedisCacheService implements CacheService {
         return redisTemplate.hasKey(key);
     }
 
-    @Override
-    public List<String> getValueByPrefix(String keyPrefix) {
 
+    @Override
+    public Map<String, String> getValueByPrefix(String keyPrefix) {
         Set<String> keys = redisTemplate.keys(keyPrefix + "*");
 
         List<String> values = redisTemplate.opsForValue().multiGet(keys);
 
-        return values;
+        Map<String, String> resultMap = new HashMap<>();
+        Iterator<String> keyIterator = keys.iterator();
+        Iterator<String> valueIterator = values.iterator();
+        while (keyIterator.hasNext() && valueIterator.hasNext()) {
+            String key = keyIterator.next();
+            String value = valueIterator.next();
+            resultMap.put(key, value);
+        }
+
+        return resultMap;
     }
 }

@@ -3,6 +3,7 @@ package com.vd.backend.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.ObservationService;
 import com.vd.backend.service.ProfilesService;
@@ -10,6 +11,7 @@ import com.vd.backend.util.JsonUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,13 +38,19 @@ public class ObservationServiceImpl implements ObservationService {
     @Autowired
     private ProfilesService profilesService;
 
+    @Autowired
+    private CacheService cacheService;
+
+
+
+
     /**
      * Formatting by time
      * @param data
      * @return
      */
     @Override
-    public String formatBundle(String data) {
+    public String getSummary(String data) {
 
         JSONArray rel = new JSONArray();
 
@@ -94,6 +102,7 @@ public class ObservationServiceImpl implements ObservationService {
                     values.put(e, 0.0);
                 });
 
+                values.put(type, value);
                 timeBodyMap.put(effectiveDateTime, values);
             }
 
@@ -117,7 +126,7 @@ public class ObservationServiceImpl implements ObservationService {
      * @return
      */
     @Override
-    public String formatToObservation(String resource, String id, String data) {
+    public String addObservation(String resource, String id, String data) {
 
         JSONObject inputData = JSON.parseObject(data);
 
@@ -127,29 +136,71 @@ public class ObservationServiceImpl implements ObservationService {
 
         typeMap.values().forEach(type -> {
             try {
+
+                String ref = resource + "/" + id;
+                String effectiveDateTime = inputData.getString("effectiveDateTime");
+                String formattedType = typeMap.keySet().stream().filter(k -> {
+                    return typeMap.get(k).equals(type);
+                }).collect(Collectors.toList()).get(0);
+
+
                 // make fhir resource data
-                observationTemplate.getJSONObject("subject").put("reference", resource + "/" + id);
+                observationTemplate.getJSONObject("subject").put("reference", ref);
                 observationTemplate.getJSONObject("valueQuantity").put("value", inputData.getJSONObject(type).get("value"));
                 observationTemplate.getJSONObject("valueQuantity").put("unit", (String) inputData.getJSONObject(type).get("unit"));
 
-                observationTemplate.put("code", JsonUtil.getFakeCode(typeMap.keySet().stream().filter(k -> {
-                    return typeMap.get(k).equals(type);
-                }).collect(Collectors.toList()).get(0)));
+                observationTemplate.put("code", JsonUtil.getFakeCode(formattedType));
 
-                observationTemplate.put("effectiveDateTime", (String) inputData.get("effectiveDateTime"));
+                observationTemplate.put("effectiveDateTime", effectiveDateTime);
+
+
+
+                // remove duplicate from cache
+                Map<String, String> observations = cacheService.getValueByPrefix("Observation");
+
+                List<String> removes = new ArrayList<>();
+
+                observations.entrySet().forEach(entry -> {
+                    String key = entry.getKey();
+
+                    JSONObject valObj = JSON.parseObject(entry.getValue());
+
+                    if (ref.equals(valObj.getJSONObject("subject").getString("reference"))
+                            && effectiveDateTime.equals(valObj.getString("effectiveDateTime"))
+                    && formattedType.equals(valObj.getJSONObject("code").getJSONArray("coding").getJSONObject(0).getString("display"))) {
+
+                        cacheService.del(key);
+
+                        removes.add(valObj.getString("id"));
+                    }
+                });
+
+                // remove duplicate from fhir server
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (String id : removes) {
+                            profilesService.delete("Observation", id);
+                        }
+                    }
+                });
+
+                t.start();
+
 
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("Data field incorrect");
             }
 
+
+
+            // Add updated data to cache and fhir server
             try {
                 // send to fhir server
                 String fhirData = observationTemplate.toString();
 
                 String rel = profilesService.add("Observation", fhirData).getData();
-
-                log.info("Add observation: {}", fhirData);
 
                 rels.add(rel);
 
