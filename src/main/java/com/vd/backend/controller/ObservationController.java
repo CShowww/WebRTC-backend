@@ -31,7 +31,6 @@ public class ObservationController {
         // 1. Get all observation with subject id
         String bundle = profilesService.getBySubject(resource, subject  + "/" + id).getData();
 
-
         // 2. Formatting bundled data and return to frontend
         String formattedData = observationService.formatBundle(bundle);
 

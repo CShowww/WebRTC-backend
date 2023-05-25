@@ -15,7 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class TimeCalc {
-    @Pointcut("execution(* com.vd.backend.service.impl.*.*(..))")
+
+    @Pointcut("execution(* com.vd.backend.service.impl.AsyncFhirServiceImpl.*(..)) " +
+            "|| execution(* com.vd.backend.service.impl.AppointmentServiceImpl.*(..)) " +
+            "|| execution(* com.vd.backend.service.impl.ObservationServiceImpl.*(..)) " +
+            "|| execution(* com.vd.backend.service.impl.ProfilesServiceImpl.*(..))")
+
     public void methodPointCut() {
     }
 
@@ -46,7 +51,7 @@ public class TimeCalc {
 
         long end = System.currentTimeMillis();
 
-        log.info("{}.{} ; Time consume: {}", className, methodName, end - start);
+        log.info("{}.{} param: {}; Time consume: {}ms", className, methodName, requestParamsString, end - start);
 
 
         return response;

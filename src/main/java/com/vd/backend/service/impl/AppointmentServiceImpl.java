@@ -145,10 +145,10 @@ public class AppointmentServiceImpl implements AppointmentService {
             for(int i = 0; i<telecom.size(); i++){
                 if(telecom.getJSONObject(i).getString("system")!=null &&
                         telecom.getJSONObject(i).getString("system").equals("email")){
-                    appointment.setPatientEmail(telecom.getJSONObject(i).getString("value"));
+                    appointment.setPractitionerEmail(telecom.getJSONObject(i).getString("value"));
                 }
             }
-            if (appointment.getPatientEmail()==null) return -1;
+            if (appointment.getPractitionerEmail()==null) return -1;
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
@@ -156,6 +156,5 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         return 0;
     }
-
 
 }

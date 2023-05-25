@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost/digital_health?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 123456
+#    password: 123456
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss

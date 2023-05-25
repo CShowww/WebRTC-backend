@@ -1,5 +1,6 @@
 package com.vd.backend.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.service.AsynFhirService;
@@ -18,10 +19,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class AsynFhirServiceImpl implements AsynFhirService {
+public class AsyncFhirServiceImpl implements AsynFhirService {
 
     // Remote http call to fhir service
     @Autowired
@@ -50,7 +52,7 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     public String add(String resource, String data) throws ExecutionException, InterruptedException {
 
         // add to fhir and get allocated resource id
-        Callable<String> addToFhir = new Callable<String>() {
+        Callable<String> addToFhirTask = new Callable<String>() {
             @Override
             public String call() throws Exception {
                 String rel = "";
@@ -64,18 +66,21 @@ public class AsynFhirServiceImpl implements AsynFhirService {
                 return rel;
             }
         };
-        FutureTask<String> futureTask = new FutureTask<>(addToFhir);
-        Thread thread = new Thread(futureTask);
+        FutureTask<String> future = new FutureTask<>(addToFhirTask);
+        Thread thread = new Thread(future);
         thread.start();
 
-        // Obtain result from fhir
-        String rel = futureTask.get();
 
+        // Obtain result from fhir
+        String rel = future.get();
         if (JsonUtil.isResource(rel)) {
             String id = JSONObject.parseObject(rel).getString("id");
             log.info("Add to fhir service, allocated resource id: {}", id);
+
             // update cache
             cacheService.set(getCacheKey(resource, id), rel);
+
+            // update related
 
         }
 
@@ -222,7 +227,7 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     }
 
     /**
-     * TODO uncache: do not use fhir
+     * Return everything of a resource with subject
      * @param resource
      * @param subject
      * @return
@@ -232,32 +237,18 @@ public class AsynFhirServiceImpl implements AsynFhirService {
      */
     @Override
     public String getBySubject(String resource, String subject) throws ExecutionException, InterruptedException, TimeoutException {
-        // Call fhir server
-        Callable<String> task = new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                String bundle = "";
-                try {
-                    bundle = httpFhirService.getBySubject(resource, subject);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    bundle = e.getMessage();
-                }
-                return bundle;
-            }
-        };
 
-        FutureTask<String> future = new FutureTask<>(task);
-        Thread t = new Thread(future);
-        t.start();
+        // 1. Gather from cache
+        List<String> resources = cacheService.getValueByPrefix(resource);
 
-        // Obtain result
-        String rel = rel = future.get(3000, TimeUnit.MILLISECONDS);
-        if (JsonUtil.isResource(rel)) {
-            cacheService.set(getCacheKey(resource, subject), rel);
-        }
+        // 2. filter with subject
+        List<String> rel = resources.stream().filter(e -> {
+            JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
+            return sub.getString("reference").equals(subject);
+        }).collect(Collectors.toList());
 
-        return rel;
+
+        return rel.toString();
     }
 
 
@@ -270,6 +261,24 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     public String getByPatientId(String resource, String id) {
         return null;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     /**

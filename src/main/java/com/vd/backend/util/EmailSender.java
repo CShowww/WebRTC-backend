@@ -60,6 +60,7 @@ public class EmailSender {
     }
 
     public void sendEmail(Connector connector) throws MessagingException {
+        this.connector = connector;
         init();
         log.info(connector.toString());
 
