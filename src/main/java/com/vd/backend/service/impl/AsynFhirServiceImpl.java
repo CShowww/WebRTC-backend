@@ -200,9 +200,6 @@ public class AsynFhirServiceImpl implements AsynFhirService {
     }
 
 
-
-
-
     @Override
     public List<String> getAll(String resource) {
         // update cache for consistent
@@ -219,18 +216,12 @@ public class AsynFhirServiceImpl implements AsynFhirService {
             }
         });
         t.start();
-
-
         // Get from cache
         List<String> resources = cacheService.getValueByPrefix(resource);
         log.info("Resouce: {}", resources);
 
         return resources;
     }
-
-
-
-
 
 
 

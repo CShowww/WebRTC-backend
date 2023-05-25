@@ -1,5 +1,7 @@
 package com.vd.backend.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.AsynFhirService;
@@ -146,12 +148,43 @@ public class ProfilesServiceImpl implements ProfilesService {
             return R.error(rel);
         }
 
-        for (String res : resources) {
-            // TODO: get all logic
+        // Transfer to front end required data format
+        JSONArray info = new JSONArray();
+        for (String s : resources) {
+            JSONObject res = JSON.parseObject(s);
+
+            log.info("res: {}", res);
+
+            String family = "", email = "", given = "", id = "";
+
+            JSONObject name = res.getJSONArray("name")
+                    .getJSONObject(0);
+
+            for (Object str: name.getJSONArray("given")) {
+                given += (String) str + " ";
+            }
+            family = name.getString("family");
+            id = res.getString("id");
+
+
+            JSONArray telecom = res.getJSONArray("telecom");
+            for (int j = 0; j < telecom.size(); j++) {
+                JSONObject t = telecom.getJSONObject(j);
+                String system = t.getString("system");
+                if ("email".equals(system)) {
+                    email = t.getString("value");
+                }
+            }
+            JSONObject profliesInfo = new JSONObject();
+            profliesInfo.put("family", family);
+            profliesInfo.put("given", given);
+            profliesInfo.put("contact", email);
+            profliesInfo.put("id", id);
+
+            info.add(profliesInfo);
         }
 
-
-        return R.success(rel);
+        return R.success(info.toString());
     }
 
 
