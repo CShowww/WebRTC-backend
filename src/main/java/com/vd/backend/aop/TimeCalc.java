@@ -19,7 +19,8 @@ public class TimeCalc {
     @Pointcut("execution(* com.vd.backend.service.impl.AsyncFhirServiceImpl.*(..)) " +
             "|| execution(* com.vd.backend.service.impl.AppointmentServiceImpl.*(..)) " +
             "|| execution(* com.vd.backend.service.impl.ObservationServiceImpl.*(..)) " +
-            "|| execution(* com.vd.backend.service.impl.ProfilesServiceImpl.*(..))")
+            "|| execution(* com.vd.backend.service.impl.ProfilesServiceImpl.*(..))" +
+            "|| execution(* com.vd.backend.service.impl.PrescriptionServiceImpl.*(..))")
 
     public void methodPointCut() {
     }

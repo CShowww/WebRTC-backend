@@ -68,22 +68,15 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
         Thread thread = new Thread(future);
         thread.start();
 
-
         // Obtain result from fhir
         String rel = future.get();
         if (JsonUtil.isResource(rel)) {
             String id = JSONObject.parseObject(rel).getString("id");
             log.info("Add to fhir service, allocated resource id: {}", id);
-
             // update cache
             cacheService.set(getCacheKey(resource, id), rel);
-
             // update related
-
         }
-
-
-
         return rel;
     }
 
@@ -114,8 +107,6 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
             }
         });
 
-
-
         removeFromFhir.start();
 
         return "remove resource: " + resource + " id: " + id;
@@ -129,7 +120,6 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
         // update cache
         cacheService.set(getCacheKey(resource, id), data);
 
-
         // Async update fhir service
         Thread updateToFhir = new Thread(new Runnable() {
             @Override
@@ -141,13 +131,11 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
                     e.printStackTrace();
                     rel = e.getMessage();
                 }
-
                 // if fail, rollback to old data
                 if (!JsonUtil.isResource(rel)) {
                     cacheService.set(getCacheKey(resource, id), oldData);
                 }
             }
-
         });
 
         updateToFhir.start();
@@ -272,25 +260,6 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
 
         return httpFhirService.getByPatientId(resource, id);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Load all available resource into cache

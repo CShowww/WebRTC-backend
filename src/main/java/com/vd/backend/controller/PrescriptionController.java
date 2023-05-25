@@ -55,7 +55,7 @@ public class PrescriptionController {
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; entry.size() != 0 && i < entry.size(); i++) {
+        for (int i = 0; entry != null && i < entry.size(); i++) {
             JSONObject jsonObject = new JSONObject();
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
@@ -139,8 +139,20 @@ public class PrescriptionController {
         templates.getJSONObject("subject").put("reference", "Patient/" + jsData.get("patientId"));
         templates.getJSONObject("subject").put("display", jsData.get("patientName"));
 
-        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" + jsData.get("practitionerId"));
-        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get("practitionerName"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" +jsData.get("practitionerId"));
+        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
+
+
+//        JSONArray performerArray = templates.getJSONArray("performer");
+//        JSONObject actorObj = performerArray.getJSONObject(0).getJSONObject("actor");
+//        actorObj.put("reference", "Practitioner/" + jsData.get("practitionerId"));
+//        actorObj.put("display", jsData.get("practitionerName"));
+//        performerArray.set(0, actorObj);
+//        templates.put("performer", performerArray);
+
+
+
+
 
         templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
         templates.getJSONObject("medicationReference").put("display", jsData.get("medicationName"));
@@ -150,6 +162,7 @@ public class PrescriptionController {
         templates.getJSONObject("quantity").put("value",jsData.get("quantity"));
 
         try {
+            log.info("add to fhir res: {}", templates.toString());
             rel = fhirService.add(resource, templates.toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -209,7 +222,14 @@ public class PrescriptionController {
         templates.getJSONObject("subject").put("display", jsData.get("patientName"));
 
         templates.getJSONObject("performer").getJSONObject("actor").put("reference", "Practitioner/" +jsData.get("practitionerId"));
-        templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
+       templates.getJSONObject("performer").getJSONObject("actor").put("display", jsData.get( "practitionerName"));
+
+//        JSONArray performerArray = templates.getJSONArray("performer");
+//        JSONObject actorObj = performerArray.getJSONObject(0).getJSONObject("actor");
+//        actorObj.put("reference", "Practitioner/" + jsData.get("practitionerId"));
+//        actorObj.put("display", jsData.get("practitionerName"));
+//        performerArray.set(0, actorObj);
+//        templates.put("performer", performerArray);
 
         templates.getJSONObject("medicationReference").put("reference", "Medication/" + jsData.get("medicationId"));
         templates.getJSONObject("medicationReference").put("display", jsData.get("medicationName"));

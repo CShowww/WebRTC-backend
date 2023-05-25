@@ -60,6 +60,4 @@ public class CommonController {
         }
         return R.success();
     }
-
-
 }

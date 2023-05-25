@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class RedisCacheService implements CacheService {
-
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
@@ -43,6 +42,4 @@ public class RedisCacheService implements CacheService {
 
         return values;
     }
-
-
 }

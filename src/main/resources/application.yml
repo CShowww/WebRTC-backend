@@ -15,6 +15,7 @@ spring:
       write-dates-as-timestamps: false
   http:
     multipart:
+      max-file-size: 10MB
       enable: false;
   redis:
     host: 127.0.0.1
