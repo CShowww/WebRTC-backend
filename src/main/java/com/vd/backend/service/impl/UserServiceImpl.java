@@ -7,11 +7,13 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vd.backend.common.R;
 import com.vd.backend.entity.bo.User;
+import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.KeycloakService;
 import com.vd.backend.service.UserService;
 import com.vd.backend.mapper.UserMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -29,6 +31,7 @@ import java.util.List;
  * @createDate 2023-04-23 19:46:36
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
@@ -36,7 +39,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private UserMapper userMapper;
 
     @Autowired
-    private HttpFhirService fhirService;
+    private AsynFhirService fhirService;
 
     @Autowired
     private KeycloakService keycloakService;
@@ -81,7 +84,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         JSONObject profile = jsonObject.getJSONObject("profile");
         JSONArray roles = profile.getJSONObject("resource_access").getJSONObject("virtual-doctor").getJSONArray("roles");
 
-        if(relJson.getJSONObject("attributes").getJSONArray("fhirId")==null){
+        if(relJson.getJSONObject("attributes")==null || relJson.getJSONObject("attributes").getJSONArray("fhirId")==null){
             for (int i = 0; i < roles.size(); i++) {
                 String actor = roles.getString(i);
                 if (actor.equals("virtual-doctor-practitioner")) {
@@ -117,6 +120,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     String result = "";
                     try {
                         result = fhirService.add("Practitioner", jsonTemplate.toString());
+                        log.info("add Practitioner {}", jsonTemplate.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -124,7 +128,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     String fhir_id = JSONObject.parseObject(result).getString("id");
                     List<String> fhir_ids = new ArrayList<>();
                     fhir_ids.add(fhir_id);
-                    relJson.getJSONObject("attributes").put("fhirId", fhir_ids);
+                    if(relJson.getJSONObject("attributes") == null) {
+                        JSONObject obj = new JSONObject();
+                        obj.put("fhirId", fhir_ids);
+                        relJson.put("attributes", obj);
+
+                    } else {
+                        relJson.getJSONObject("attributes").put("fhirId", fhir_ids);
+                    }
+
                     keycloakService.updateFhirId(admin_token, id, relJson);
                     return fhir_id;
                 } else if (actor.equals("virtual-doctor-patient")) {
@@ -161,6 +173,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     String result = "";
                     try {
                         result = fhirService.add("Patient", jsonTemplate.toString());
+                        log.info("add Patient {}", jsonTemplate.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -168,7 +181,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     String fhir_id = JSONObject.parseObject(result).getString("id");
                     List<String> fhir_ids = new ArrayList<>();
                     fhir_ids.add(fhir_id);
-                    relJson.getJSONObject("attributes").put("fhirId", fhir_ids);
+
+                    if(relJson.getJSONObject("attributes") == null) {
+                        JSONObject obj = new JSONObject();
+                        obj.put("fhirId", fhir_ids);
+                        relJson.put("attributes", obj);
+
+                    } else {
+                        relJson.getJSONObject("attributes").put("fhirId", fhir_ids);
+                    }
+
                     keycloakService.updateFhirId(admin_token, id, relJson);
                     return fhir_id;
                 }

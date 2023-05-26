@@ -122,8 +122,6 @@ public class UserController {
                 ans.add(jsonObject);
             }
 
-
-
         }
         return R.success(ans.toString());
     }

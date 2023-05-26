@@ -22,6 +22,7 @@ public class TimeCalc {
             "|| execution(* com.vd.backend.service.impl.ProfilesServiceImpl.*(..))" +
             "|| execution(* com.vd.backend.service.impl.PrescriptionServiceImpl.*(..))")
 
+//    @Pointcut("execution(* com.vd.backend.service.impl.*.*(..))")
     public void methodPointCut() {
     }
 
