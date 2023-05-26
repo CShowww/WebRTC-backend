@@ -209,8 +209,8 @@ public class UserController {
 
     }
 
-    @PutMapping("/update")
-    public R<String> updateUser(@RequestBody UserInfo userInfo) {
+    @PutMapping("/update/{id}")
+    public R<String> updateUser(@PathVariable String id, @RequestBody UserInfo userInfo) {
         String token = "";
         try{
             token = keycloakService.getAccessToken();
@@ -224,7 +224,7 @@ public class UserController {
         }
 
         try{
-            keycloakService.addUser(userInfo, token);
+            keycloakService.update(userInfo, token, id);
         }catch (HttpClientErrorException e){
             return R.error(e.getMessage());
         }

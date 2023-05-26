@@ -1,5 +1,6 @@
 package com.vd.backend.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.entity.vo.UserInfo;
 
 public interface KeycloakService {
@@ -9,4 +10,8 @@ public interface KeycloakService {
     int addUser(UserInfo userInfo, String token);
 
     int update(UserInfo userInfo, String token, String id);
+
+    String getUser(String id, String s);
+
+    int updateFhirId(String token, String id, JSONObject jsonObject);
 }

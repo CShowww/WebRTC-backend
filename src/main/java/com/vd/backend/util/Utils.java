@@ -1,5 +1,6 @@
 package com.vd.backend.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.entity.vo.UserInfo;
 import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
@@ -11,11 +12,11 @@ public class Utils {
         RestTemplate client = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpMethod method = HttpMethod.POST;
-        // 以表单的方式提交
+
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        //将请求头部和参数合成一个请求
+
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-        //执行HTTP请求，将返回的结构使用ResultVO类格式化
+
         ResponseEntity<String> response = client.exchange(url, method, requestEntity, String.class);
         if(!response.hasBody()){
             return null;
@@ -29,12 +30,12 @@ public class Utils {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpMethod method = HttpMethod.POST;
-        // 以表单的方式提交
+
         headers.setContentType(MediaType.APPLICATION_JSON);
-        //将请求头部和参数合成一个请求
+
         HttpEntity<UserInfo> requestEntity = new HttpEntity<UserInfo>(userInfo, headers);
         System.out.println(requestEntity.toString());
-        //执行HTTP请求，将返回的结构使用ResultVO类格式化
+
         ResponseEntity<String> response = client.exchange(url, method, requestEntity, String.class);
         if(!response.hasBody()){
             return null;
@@ -48,12 +49,12 @@ public class Utils {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpMethod method = HttpMethod.PUT;
-        // 以表单的方式提交
+
         headers.setContentType(MediaType.APPLICATION_JSON);
-        //将请求头部和参数合成一个请求
+
         HttpEntity<UserInfo> requestEntity = new HttpEntity<UserInfo>(userInfo, headers);
         System.out.println(requestEntity.toString());
-        //执行HTTP请求，将返回的结构使用ResultVO类格式化
+
         ResponseEntity<String> response = client.exchange(url, method, requestEntity, String.class);
         if(!response.hasBody()){
             return null;
@@ -63,4 +64,41 @@ public class Utils {
         return response.getBody();
     }
 
+    public static String sendGetRequest(String url, String token) {
+        RestTemplate client = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpMethod method = HttpMethod.GET;
+
+        HttpEntity<UserInfo> requestEntity = new HttpEntity<UserInfo>(headers);
+        System.out.println(requestEntity.toString());
+
+        ResponseEntity<String> response = client.exchange(url, method, requestEntity, String.class);
+        if(!response.hasBody()){
+            return null;
+        }
+
+
+        return response.getBody();
+    }
+
+    public static String UpdateFhirIdRequest(String url, JSONObject jsonObject, String token){
+        RestTemplate client = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpMethod method = HttpMethod.PUT;
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> requestEntity = new HttpEntity<String>(jsonObject.toString(), headers);
+        System.out.println(requestEntity.toString());
+
+        ResponseEntity<String> response = client.exchange(url, method, requestEntity, String.class);
+        if(!response.hasBody()){
+            return null;
+        }
+
+
+        return response.getBody();
+    }
 }
