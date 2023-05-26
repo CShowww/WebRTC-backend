@@ -22,7 +22,6 @@ public class PrescriptionController {
 
     String resource = "MedicationDispense";
 
-
     @GetMapping("/{id}")
     public R<String> getPrescription(@PathVariable String id) {
 
@@ -59,7 +58,7 @@ public class PrescriptionController {
             JSONObject jsonObject = new JSONObject();
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-
+            String id = res.getString("id");
             String status = res.getString("status"); //1
             String quantity = res.getJSONObject("quantity").getString("value"); //1
             String recorded = res.getString("whenPrepared"); // 1
@@ -89,7 +88,7 @@ public class PrescriptionController {
             jsonObject.put("quantity", quantity);
             jsonObject.put("status", status);
             jsonObject.put("recorded", recorded);
-
+            jsonObject.put("id",id);
             ans.add(jsonObject);
         }
 
