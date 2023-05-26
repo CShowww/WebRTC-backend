@@ -96,24 +96,26 @@ public class AppointmentController {
     @GetMapping("/getById/practitioner/{id}")
     public R<String> getByPractitionerId(@PathVariable String id) {
         log.info("Get all appointments related to practitioner {}", id);
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getByPractitionerId(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
         JSONArray ans = new JSONArray();
 
-        if(entry!=null){
-            for (int i = 0; i < entry.size(); i++) {
+        for (String s: rel) {
 
-                JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
-            }
+            JSONObject res = JSON.parseObject(s);
+
+            log.info("getByPractitionerId res: {}", res);
+
+            ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
+
         }
+
 
         return R.success(ans.toString());
     }
@@ -126,24 +128,21 @@ public class AppointmentController {
     @GetMapping("/getById/patient/{id}")
     public R<String> getByPatientId(@PathVariable String id) {
         log.info("Get all appointments related to practitioner {}", id);
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getByPatientId(resource, id);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
         JSONArray ans = new JSONArray();
 
-        if(entry!=null){
-            for (int i = 0; i < entry.size(); i++) {
-
-                JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
-            }
+        for(String s: rel) {
+            JSONObject res = JSON.parseObject(s);
+            ans.add(JSONObject.parseObject(appointmentService.Json2String(res)));
         }
+
 
         return R.success(ans.toString());
     }
@@ -215,40 +214,38 @@ public class AppointmentController {
         start = LocalDateTime.parse(appointment.getStartTime(), formatter);
         end = LocalDateTime.parse(appointment.getEndTime(), formatter);
 
-        String rel = "";
+        List<String> relList = new ArrayList<>();
         try {
-            rel = fhirService.getByPractitionerId(resource, appointment.getPractitionerId());
+            relList = fhirService.getByPractitionerId(resource, appointment.getPractitionerId());
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
 
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
-        if(entry!=null) {
-//            System.out.println("Entry is not null!");
-            for (int i = 0; i < entry.size(); i++) {
+        for(String s: relList) {
+            JSONObject res = JSONObject.parseObject(s);
+            pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+            formatter = DateTimeFormatter.ofPattern(pattern);
+            LocalDateTime bookStart = LocalDateTime.parse(res.getString("start"), formatter);
+            LocalDateTime bookEnd = LocalDateTime.parse(res.getString("start"), formatter);
 
-                JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-                pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-                formatter = DateTimeFormatter.ofPattern(pattern);
-                LocalDateTime bookStart = LocalDateTime.parse(res.getString("start"), formatter);
-                LocalDateTime bookEnd = LocalDateTime.parse(res.getString("start"), formatter);
-
-                if (start.isAfter(bookStart) && start.isBefore(bookEnd)) {
-                    return R.error("Current time slot is not available");
-                } else if (end.isAfter(bookStart) && end.isBefore(bookEnd)) {
-                    return R.error("Current time slot is not available");
-                } else if (start.compareTo(bookStart) <= 0 && end.compareTo(bookEnd) >= 0) {
-                    return R.error("Current time slot is not available");
-                }
+            if (start.isAfter(bookStart) && start.isBefore(bookEnd)) {
+                return R.error("Current time slot is not available");
+            } else if (end.isAfter(bookStart) && end.isBefore(bookEnd)) {
+                return R.error("Current time slot is not available");
+            } else if (start.compareTo(bookStart) <= 0 && end.compareTo(bookEnd) >= 0) {
+                return R.error("Current time slot is not available");
             }
         }
+
 
         if(appointmentService.getUserInfoById(appointment) < 0){
             return R.error("Get user resource false.");
         }
         JSONObject data = appointmentService.String2Json(appointment);
 
+
+        String rel = "";
         try {
             rel = fhirService.add(resource, data.toString());
         } catch (Exception e) {

@@ -250,45 +250,24 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     }
 
 
-//    public List<String> getByPractitionerIdFromCache(String resource, String id) {
-//        // 1. Gather from cache
-//        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
-//
-//        // 2. filter with subject
-//        List<String> filteredRes = resources.stream().filter(e -> {
-//            log.info("observation {}", e);
-////            JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
-//            JSONObject res = JSON.parseObject(e);
-//            JSONArray participant = res.getJSONArray("participant");
-//
-//            for (int i=0; participant != null && i<participant.size(); i++) {
-//                JSONObject obj = participant.getJSONObject(i);
-//                JSONObject actor = obj.getJSONObject("actor");
-//
-//                String ref = actor.getString("reference");
-//
-//                if (ref.equals("Practitioner" + "/" + id)) {
-//                    return true;
-//                }
-//            }
-//            return false;
-//        }).collect(Collectors.toList());
-//
-//
-//        return filteredRes;
-//    }
+
 
 
     @Override
-    public String getByPractitionerId(String resource, String id) {
+    public List<String> getByPractitionerId(String resource, String id) {
 
-        return httpFhirService.getByPractitionerId(resource, id);
+
+        return getByIdFromCache(resource, id, "Practitioner");
+
+//        return httpFhirService.getByPractitionerId(resource, id);
     }
 
     @Override
-    public String getByPatientId(String resource, String id) {
+    public List<String> getByPatientId(String resource, String id) {
 
-        return httpFhirService.getByPatientId(resource, id);
+
+
+        return getByIdFromCache(resource, id, "Patient");
     }
 
     /**
@@ -333,4 +312,34 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
         return resource + ":" + id;
     }
 
+
+
+
+    public List<String> getByIdFromCache(String resource, String id, String subject) {
+        // 1. Gather from cache
+        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
+
+        // 2. filter with subject
+        List<String> filteredRes = resources.stream().filter(e -> {
+            log.info("observation {}", e);
+//            JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
+            JSONObject res = JSON.parseObject(e);
+            JSONArray participant = res.getJSONArray("participant");
+
+            for (int i=0; participant != null && i<participant.size(); i++) {
+                JSONObject obj = participant.getJSONObject(i);
+                JSONObject actor = obj.getJSONObject("actor");
+
+                String ref = actor.getString("reference");
+
+                if (ref.equals(subject + "/" + id)) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+
+        return filteredRes;
+    }
 }

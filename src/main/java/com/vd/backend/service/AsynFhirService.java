@@ -22,8 +22,8 @@ public interface AsynFhirService {
 
     String getBySubject(String resource, String subject) throws ExecutionException, InterruptedException, TimeoutException;
 
-    String getByPractitionerId(String resource, String id);
+    List<String> getByPractitionerId(String resource, String id);
 
-    String getByPatientId(String resource, String id);
+    List<String> getByPatientId(String resource, String id);
 
 }
