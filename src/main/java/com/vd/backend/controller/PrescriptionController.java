@@ -117,6 +117,7 @@ public class PrescriptionController {
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
 
+            String mId = res.getString("id");
             String status = res.getString("status"); //1
             String quantity = res.getJSONObject("quantity").getString("value"); //1
             String recorded = res.getString("whenPrepared"); // 1
@@ -147,7 +148,7 @@ public class PrescriptionController {
                 jsonObject.put("quantity", quantity);
                 jsonObject.put("status", status);
                 jsonObject.put("recorded", recorded);
-                jsonObject.put("id",id);
+                jsonObject.put("id",mId);
                 ans.add(jsonObject);
             }
 
