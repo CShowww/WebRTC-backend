@@ -250,34 +250,39 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
     }
 
 
+//    public List<String> getByPractitionerIdFromCache(String resource, String id) {
+//        // 1. Gather from cache
+//        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
+//
+//        // 2. filter with subject
+//        List<String> filteredRes = resources.stream().filter(e -> {
+//            log.info("observation {}", e);
+////            JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
+//            JSONObject res = JSON.parseObject(e);
+//            JSONArray participant = res.getJSONArray("participant");
+//
+//            for (int i=0; participant != null && i<participant.size(); i++) {
+//                JSONObject obj = participant.getJSONObject(i);
+//                JSONObject actor = obj.getJSONObject("actor");
+//
+//                String ref = actor.getString("reference");
+//
+//                if (ref.equals("Practitioner" + "/" + id)) {
+//                    return true;
+//                }
+//            }
+//            return false;
+//        }).collect(Collectors.toList());
+//
+//
+//        return filteredRes;
+//    }
+
+
     @Override
-    public List<String> getByPractitionerId(String resource, String id) {
-        // 1. Gather from cache
-        List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
+    public String getByPractitionerId(String resource, String id) {
 
-        // 2. filter with subject
-        List<String> filteredRes = resources.stream().filter(e -> {
-            log.info("observation {}", e);
-//            JSONObject sub = JSON.parseObject(e).getJSONObject("subject");
-            JSONObject res = JSON.parseObject(e);
-            JSONArray participant = res.getJSONArray("participant");
-
-            for (int i=0; participant != null && i<participant.size(); i++) {
-                JSONObject obj = participant.getJSONObject(i);
-                JSONObject actor = obj.getJSONObject("actor");
-
-                String ref = actor.getString("reference");
-
-                if (ref.equals("Practitioner" + "/" + id)) {
-                    return true;
-                }
-            }
-            return false;
-        }).collect(Collectors.toList());
-
-
-        return filteredRes;
-
+        return httpFhirService.getByPractitionerId(resource, id);
     }
 
     @Override
