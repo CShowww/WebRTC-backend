@@ -22,6 +22,7 @@ public class PrescriptionController {
 
     String resource = "MedicationDispense";
 
+
     @GetMapping("/{id}")
     public R<String> getPrescription(@PathVariable String id) {
 
@@ -58,10 +59,11 @@ public class PrescriptionController {
             JSONObject jsonObject = new JSONObject();
 
             JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
-            String id = res.getString("id");
+
             String status = res.getString("status"); //1
             String quantity = res.getJSONObject("quantity").getString("value"); //1
             String recorded = res.getString("whenPrepared"); // 1
+            String id = res.getString("id");
 
 
             String practitionerId = res.getJSONArray("performer").getJSONObject(0).getJSONObject("actor").getString("reference"); //1
@@ -88,8 +90,67 @@ public class PrescriptionController {
             jsonObject.put("quantity", quantity);
             jsonObject.put("status", status);
             jsonObject.put("recorded", recorded);
+
             jsonObject.put("id",id);
             ans.add(jsonObject);
+        }
+
+        return R.success(ans.toString());
+    }
+
+    @GetMapping("/Patient/{id}")
+    public R<String> getPrescriptionById(@PathVariable String id) {
+        log.info("Get all Prescription {}", resource);
+        String rel = "";
+        try {
+            rel = fhirService.getAll(resource);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.error("Call fhir server fail");
+        }
+        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
+
+        JSONArray ans = new JSONArray();
+
+        for (int i = 0; entry != null && i < entry.size(); i++) {
+            JSONObject jsonObject = new JSONObject();
+
+            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+
+            String status = res.getString("status"); //1
+            String quantity = res.getJSONObject("quantity").getString("value"); //1
+            String recorded = res.getString("whenPrepared"); // 1
+            String patientId = res.getJSONObject("subject").getString("reference"); //1
+            patientId = patientId.substring(8);
+            if(patientId.equals(id)){
+                String patientName = res.getJSONObject("subject").getString("display"); //1
+
+                String practitionerId = res.getJSONArray("performer").getJSONObject(0).getJSONObject("actor").getString("reference"); //1
+                practitionerId = practitionerId.substring(13);
+                String practitionerName = res.getJSONArray("performer").getJSONObject(0).getJSONObject("actor").getString("display"); //1
+
+
+                String medicationId = res.getJSONObject("medicationReference").getString("reference"); //1
+                String medicationName = res.getJSONObject("medicationReference").getString("display"); //1
+
+
+
+                jsonObject.put("practitionerId", practitionerId);
+                jsonObject.put("practitionerName", practitionerName);
+
+                jsonObject.put("patientId", patientId);
+                jsonObject.put("patientName", patientName);
+
+                jsonObject.put("medicationId", medicationId);
+                jsonObject.put("medicationName", medicationName);
+
+                jsonObject.put("quantity", quantity);
+                jsonObject.put("status", status);
+                jsonObject.put("recorded", recorded);
+                jsonObject.put("id",id);
+                ans.add(jsonObject);
+            }
+
         }
 
         return R.success(ans.toString());
