@@ -18,8 +18,5 @@ public interface UserService extends IService<User> {
 
     public String saveToken(HttpServletRequest httpServletRequest, String data);
 
-    public String getToken();
-
-    public int addUser(UserInfo userInfo);
 
 }

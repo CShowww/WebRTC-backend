@@ -8,12 +8,12 @@ import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.ObservationService;
 import com.vd.backend.service.ProfilesService;
 import com.vd.backend.util.JsonUtil;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
