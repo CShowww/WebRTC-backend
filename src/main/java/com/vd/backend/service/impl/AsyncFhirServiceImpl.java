@@ -8,6 +8,7 @@ import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.CacheImpl;
 import com.vd.backend.util.JsonUtil;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
