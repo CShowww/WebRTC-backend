@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 )
 
 @Primary
-public interface FhirService {
+public interface HttpFhirService {
     // RESTful CRUD Operation
     @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
     public String get(@PathVariable String resource, @PathVariable String id);
@@ -30,8 +30,8 @@ public interface FhirService {
     @RequestMapping(value = "/{resource}/{id}", method = RequestMethod.DELETE)
     public String delete(@PathVariable String resource, @PathVariable String id);
 
-    @RequestMapping(value="/Observation")
-    public String getBySubject(@RequestParam("subject") String subject);
+    @RequestMapping(value="/{resource}")
+    public String getBySubject(@PathVariable String resource, @RequestParam("subject") String subject);
 
     @RequestMapping(value = "/{resource}?practitioner={id}", method = RequestMethod.GET, headers = "content-type=application/fhir+json")
     public String getByPractitionerId(@PathVariable String resource, @PathVariable String id);

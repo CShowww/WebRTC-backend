@@ -6,14 +6,13 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vd.backend.entity.bo.User;
-import com.vd.backend.entity.vo.UserInfo;
-import com.vd.backend.service.FhirService;
+import com.vd.backend.service.AsynFhirService;
 import com.vd.backend.service.UserService;
 import com.vd.backend.mapper.UserMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -163,18 +162,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
     }
-
-    @Override
-    public String getToken() {
-
-        return null;
-    }
-
-    @Override
-    public int addUser(UserInfo userInfo) {
-        return 0;
-    }
-
 
 }
 

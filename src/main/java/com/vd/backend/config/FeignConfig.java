@@ -5,6 +5,8 @@ import feign.auth.BasicAuthRequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
+
+
 public class FeignConfig {
 
     @Value("${fhir.username}")
