@@ -8,13 +8,12 @@ import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.CacheImpl;
 import com.vd.backend.util.JsonUtil;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

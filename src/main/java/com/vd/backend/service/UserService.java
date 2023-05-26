@@ -2,7 +2,9 @@ package com.vd.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.vd.backend.entity.bo.User;
-import jakarta.servlet.http.HttpServletRequest;
+import com.vd.backend.entity.vo.UserInfo;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -15,5 +17,6 @@ public interface UserService extends IService<User> {
     public User findUserById(String userId);
 
     public String saveToken(HttpServletRequest httpServletRequest, String data);
+
 
 }

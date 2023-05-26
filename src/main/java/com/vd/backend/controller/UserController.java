@@ -3,9 +3,9 @@ package com.vd.backend.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
+import com.vd.backend.entity.vo.UserInfo;
+import com.vd.backend.service.KeycloakService;
 import com.vd.backend.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +15,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +33,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    KeycloakService keycloakService;
 
     @Value("${common.basepath}")
     String basePath;
@@ -178,6 +183,54 @@ public class UserController {
     public R<String> upload() {
         log.info("hi");
         return R.success("hi");
+    }
+
+    @PostMapping("/add")
+    public R<String> addUser(@RequestBody UserInfo userInfo) {
+        String token = "";
+        try{
+            token = keycloakService.getAccessToken();
+        }catch (HttpClientErrorException e){
+            return R.error("Get token fail.");
+        }
+
+
+        if(token==null){
+            return R.error("Token is null");
+        }
+
+        try{
+            keycloakService.addUser(userInfo, token);
+        }catch (HttpClientErrorException e){
+            return R.error(e.getMessage());
+        }
+
+        return R.success("Success");
+
+    }
+
+    @PutMapping("/update")
+    public R<String> updateUser(@RequestBody UserInfo userInfo) {
+        String token = "";
+        try{
+            token = keycloakService.getAccessToken();
+        }catch (HttpClientErrorException e){
+            return R.error("Get token fail.");
+        }
+
+
+        if(token==null){
+            return R.error("Token is null");
+        }
+
+        try{
+            keycloakService.addUser(userInfo, token);
+        }catch (HttpClientErrorException e){
+            return R.error(e.getMessage());
+        }
+
+        return R.success("Success");
+
     }
 
 }
