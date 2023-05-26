@@ -44,4 +44,22 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         return 1;
     }
+
+    @Override
+    public String getUser(String token, String id) {
+        String authorizeUrl = "https://keycloak-uom2.comp90082-2023.vsbox.dev/auth/admin/realms/master/users/" + id;
+
+        String rel = Utils.sendGetRequest(authorizeUrl, token);
+
+        return rel;
+    }
+
+    @Override
+    public int updateFhirId(String token, String id, JSONObject jsonObject) {
+        String authorizeUrl = "https://keycloak-uom2.comp90082-2023.vsbox.dev/auth/admin/realms/master/users/" + id;
+
+        String rel = Utils.UpdateFhirIdRequest(authorizeUrl, jsonObject, token);
+
+        return 1;
+    }
 }
