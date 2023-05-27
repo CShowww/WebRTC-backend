@@ -6,10 +6,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
 import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.service.KeycloakService;
 import com.vd.backend.service.ProfilesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -31,6 +34,9 @@ public class ProfilesServiceImpl implements ProfilesService {
     @Autowired
     AsyncFhirService asynFhirService;
 
+    @Autowired
+    KeycloakService keycloakService;
+
 
     /**
      * Add a fhir resource
@@ -42,6 +48,44 @@ public class ProfilesServiceImpl implements ProfilesService {
     @Override
     public R<String> get(String resource, String id) {
         String rel = null;
+        try{
+            rel = asynFhirService.get(resource, id);
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            rel = e.getMessage();
+            return R.error(rel);
+        }
+
+        return R.success(rel);
+    }
+
+    @Override
+    public R<String> getByKeycloakId(String resource, String id) {
+        String rel = "";
+        String admin_token = "";
+        try {
+            admin_token = keycloakService.getAccessToken();
+        } catch (HttpClientErrorException e) {
+            System.out.println("Get token fail");
+            return null;
+        }
+
+        try {
+            rel = keycloakService.getUser(admin_token, id);
+        } catch (HttpClientErrorException e) {
+            System.out.println("Get user fail");
+            return null;
+        }
+
+        JSONObject relJson = JSONObject.parseObject(rel);
+        if (relJson.getString("error") != null) {
+            System.out.println("Get user is null");
+            return null;
+        }
+
+        id = relJson.getJSONObject("attributes").getJSONArray("fhirId").getString(0);
+
         try{
             rel = asynFhirService.get(resource, id);
         } catch (Exception e) {

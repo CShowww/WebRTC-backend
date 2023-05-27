@@ -11,7 +11,7 @@ public interface KeycloakService {
 
     int update(UserInfo userInfo, String token, String id);
 
-    String getUser(String id, String s);
+    String getUser(String token, String id);
 
     int updateFhirId(String token, String id, JSONObject jsonObject);
 }
