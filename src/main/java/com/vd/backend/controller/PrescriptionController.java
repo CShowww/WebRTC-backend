@@ -4,13 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
-import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -19,7 +19,7 @@ import java.util.Date;
 public class PrescriptionController {
 
     @Autowired
-    HttpFhirService fhirService;
+    AsyncFhirService fhirService;
 
     String resource = "MedicationDispense";
 
@@ -45,21 +45,20 @@ public class PrescriptionController {
     @GetMapping()
     public R<String> getAllPrescription() {
         log.info("Get all Prescription {}", resource);
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; entry != null && i < entry.size(); i++) {
+        for (String s: rel) {
             JSONObject jsonObject = new JSONObject();
 
-            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+            JSONObject res = JSON.parseObject(s);
 
             String status = res.getString("status"); //1
             String quantity = res.getJSONObject("quantity").getString("value"); //1
@@ -102,21 +101,20 @@ public class PrescriptionController {
     @GetMapping("/Patient/{id}")
     public R<String> getPrescriptionById(@PathVariable String id) {
         log.info("Get all Prescription {}", resource);
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getAll(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; entry != null && i < entry.size(); i++) {
+        for (String s: rel) {
             JSONObject jsonObject = new JSONObject();
 
-            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+            JSONObject res = JSON.parseObject(s);
 
             String mId = res.getString("id");
             String status = res.getString("status"); //1
@@ -213,21 +211,21 @@ public class PrescriptionController {
     @GetMapping("/Medication")
     public R<String> getAllMedication() {
         log.info("Get all Medication");
-        String rel = "";
+        List<String> rel = new ArrayList<>();
         try {
             rel = fhirService.getAll("Medication");
         } catch (Exception e) {
             e.printStackTrace();
             return R.error("Call fhir server fail");
         }
-        JSONArray entry = JSON.parseObject(rel).getJSONArray("entry");
+
 
         JSONArray ans = new JSONArray();
 
-        for (int i = 0; entry != null && i < entry.size(); i++) {
+        for (String s : rel) {
             JSONObject jsonObject = new JSONObject();
 
-            JSONObject res = entry.getJSONObject(i).getJSONObject("resource");
+            JSONObject res = JSON.parseObject(s);
 
             String id = res.getString("id"); //1
 

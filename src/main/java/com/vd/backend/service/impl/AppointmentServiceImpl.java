@@ -5,8 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
-import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
-    AsynFhirService fhirService;
+    AsyncFhirService fhirService;
 
     @Override
     public String Json2String(JSONObject jsonObject) {

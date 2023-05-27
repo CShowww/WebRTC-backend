@@ -2,13 +2,9 @@ package com.vd.backend.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.vd.backend.common.R;
 import com.vd.backend.entity.bo.User;
-import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.KeycloakService;
 import com.vd.backend.service.UserService;
 import com.vd.backend.mapper.UserMapper;
@@ -22,7 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,7 +34,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private UserMapper userMapper;
 
     @Autowired
-    private AsynFhirService fhirService;
+    private AsyncFhirService fhirService;
 
     @Autowired
     private KeycloakService keycloakService;

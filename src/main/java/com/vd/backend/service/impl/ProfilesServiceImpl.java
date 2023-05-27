@@ -4,20 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.common.R;
-import com.vd.backend.service.AsynFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.service.ProfilesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.List;
 
 /**
@@ -34,7 +29,7 @@ public class ProfilesServiceImpl implements ProfilesService {
 
     // Async method, using cache
     @Autowired
-    AsynFhirService asynFhirService;
+    AsyncFhirService asynFhirService;
 
 
     /**

@@ -1,14 +1,11 @@
 package com.vd.backend.service;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 
-public interface AsynFhirService {
+public interface AsyncFhirService {
     String add(String resource, String id) throws ExecutionException, InterruptedException;
 
     String delete(String resource, String id);

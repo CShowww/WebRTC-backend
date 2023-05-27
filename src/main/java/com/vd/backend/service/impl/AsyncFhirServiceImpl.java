@@ -3,7 +3,7 @@ package com.vd.backend.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.vd.backend.service.AsynFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.CacheService;
 import com.vd.backend.service.HttpFhirService;
 import com.vd.backend.util.CacheImpl;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class AsyncFhirServiceImpl implements AsynFhirService {
+public class AsyncFhirServiceImpl implements AsyncFhirService {
 
     // Remote http call to fhir service
     @Autowired

@@ -10,8 +10,7 @@ import com.vd.backend.entity.bo.Connector;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
 
-import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.HttpFhirService;
+import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.util.EmailSender;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -34,7 +32,7 @@ import java.util.List;
 public class AppointmentController {
 
     @Autowired
-    private AsynFhirService fhirService;
+    private AsyncFhirService fhirService;
 
     @Autowired
     private AppointmentService appointmentService;
