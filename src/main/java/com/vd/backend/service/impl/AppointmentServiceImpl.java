@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.vd.backend.entity.vo.Appointment;
 import com.vd.backend.service.AppointmentService;
 import com.vd.backend.service.AsynFhirService;
-import com.vd.backend.service.HttpFhirService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

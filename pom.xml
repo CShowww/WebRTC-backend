@@ -41,12 +41,6 @@
         </dependency>
 
 
-<!--        ORM framework dependency-->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.3</version>
-        </dependency>
 
         <!-- Java Mail -->
         <dependency>
@@ -55,18 +49,6 @@
             <version>1.6.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>1.2.17</version>
-        </dependency>
 
 
 <!--        FHIR Related -->
