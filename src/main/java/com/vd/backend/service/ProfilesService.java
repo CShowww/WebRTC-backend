@@ -18,6 +18,8 @@ public interface ProfilesService {
 
     R<String> get(String resource, String id);
 
+    R<String> getByKeycloakId(String resource, String id);
+
     R<String> getAll(String resource);
 
     R<String> getBySubject(String resource, String subject);

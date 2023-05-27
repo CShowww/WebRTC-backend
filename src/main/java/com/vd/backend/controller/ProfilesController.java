@@ -32,6 +32,19 @@ public class ProfilesController {
      * @return
      */
 
+    @GetMapping("/{resource}/keycloak/{id}")
+    public R<String> getByKeycloakId(@PathVariable String resource, @PathVariable String id) throws ExecutionException, InterruptedException {
+
+        return profilesService.getByKeycloakId(resource, id);
+    };
+
+    /**
+     * Get Patient resource by id
+     * @param id
+     * @param
+     * @return
+     */
+
     @GetMapping("/{resource}/{id}")
     public R<String> get(@PathVariable String resource, @PathVariable String id) throws ExecutionException, InterruptedException {
 
