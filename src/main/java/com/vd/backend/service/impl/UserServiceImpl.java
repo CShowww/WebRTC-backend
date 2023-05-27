@@ -197,6 +197,11 @@ public class UserServiceImpl
         return relJson.getJSONObject("attributes").getJSONArray("fhirId").getString(0);
     }
 
+    public static void main(String[] args) {
+        String s = "";
+
+    }
+
 }
 
 
