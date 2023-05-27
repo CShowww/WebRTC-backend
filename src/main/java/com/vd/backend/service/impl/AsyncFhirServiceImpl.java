@@ -274,7 +274,7 @@ public class AsyncFhirServiceImpl implements AsyncFhirService {
     /**
      * Load all available resource into cache
      */
-    @PostConstruct
+    @dd
     void init() {
         for(String resource: resources) {
 

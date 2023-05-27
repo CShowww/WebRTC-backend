@@ -7,7 +7,6 @@ import com.vd.backend.entity.bo.User;
 import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.KeycloakService;
 import com.vd.backend.service.UserService;
-import com.vd.backend.mapper.UserMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,11 +27,8 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class UserServiceImpl extends ServiceImpl<UserMapper, User>
+public class UserServiceImpl
         implements UserService {
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private AsyncFhirService fhirService;
@@ -41,7 +38,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public User findUserById(String userId) {
-        return this.getById(userId);
+        return null;
     }
 
     @Override
@@ -96,13 +93,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     name.put("given", givenName);
                     nameArray.add(name);
                     jsonTemplate.put("name", nameArray);
-                    //parse Email
+                    //parse Email and phone
                     JSONArray telecomArray = new JSONArray();
-                    JSONObject telecom = new JSONObject();
-                    telecom.put("system", "email");
-                    telecom.put("value", profile.getString("email"));
-                    telecom.put("use", "work");
-                    telecomArray.add(telecom);
+                    JSONObject emailJson = new JSONObject();
+                    emailJson.put("system", "email");
+                    emailJson.put("value", profile.getString("email"));
+                    emailJson.put("use", "work");
+                    telecomArray.add(emailJson);
+                    JSONObject phoneJson = new JSONObject();
+                    phoneJson.put("system", "phone");
+                    phoneJson.put("value", relJson.getJSONObject("attributes").getJSONArray("phoneNumber").getString(0));
+                    phoneJson.put("use", "mobile");
+                    telecomArray.add(phoneJson);
                     jsonTemplate.put("telecom", telecomArray);
                     //parse gender
                     if (profile.getString("gender") != null) {
@@ -151,11 +153,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     jsonTemplate.put("name", nameArray);
                     //parse Email
                     JSONArray telecomArray = new JSONArray();
-                    JSONObject telecom = new JSONObject();
-                    telecom.put("system", "email");
-                    telecom.put("value", profile.getString("email"));
-                    telecom.put("use", "work");
-                    telecomArray.add(telecom);
+                    JSONObject emailJson = new JSONObject();
+                    emailJson.put("system", "email");
+                    emailJson.put("value", profile.getString("email"));
+                    emailJson.put("use", "work");
+                    telecomArray.add(emailJson);
+                    JSONObject phoneJson = new JSONObject();
+                    phoneJson.put("system", "phone");
+                    phoneJson.put("value", relJson.getJSONObject("attributes").getJSONArray("phoneNumber").getString(0));
+                    phoneJson.put("use", "mobile");
+                    telecomArray.add(phoneJson);
                     jsonTemplate.put("telecom", telecomArray);
                     //parse gender
                     if (profile.getString("gender") != null) {
