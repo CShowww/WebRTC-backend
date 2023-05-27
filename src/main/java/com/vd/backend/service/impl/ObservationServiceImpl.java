@@ -154,8 +154,7 @@ public class ObservationServiceImpl implements ObservationService {
 
                 observationTemplate.put("effectiveDateTime", effectiveDateTime);
 
-
-
+                
                 // remove duplicate from cache
                 Map<String, String> observations = cacheService.getValueByPrefix("Observation");
 

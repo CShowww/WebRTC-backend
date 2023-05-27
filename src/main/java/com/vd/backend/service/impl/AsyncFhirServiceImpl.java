@@ -192,6 +192,7 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
 
     @Override
     public List<String> getAll(String resource) {
+
         // Get from cache
         List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
 
@@ -316,6 +317,8 @@ public class AsyncFhirServiceImpl implements AsynFhirService {
 
 
     public List<String> getByIdFromCache(String resource, String id, String subject) {
+
+
         // 1. Gather from cache
         List<String> resources = cacheService.getValueByPrefix(resource).values().stream().toList();
 

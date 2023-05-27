@@ -34,8 +34,11 @@ public class RedisCacheService implements CacheService {
 
 
     @Override
-    public Map<String, String> getValueByPrefix(String keyPrefix) {
-        Set<String> keys = redisTemplate.keys(keyPrefix + "*");
+    public Map<String, String> getValueByPrefix(String resource) {
+
+        String cacheKey = getCachePrefix(resource);
+
+        Set<String> keys = redisTemplate.keys(cacheKey + "*");
 
         List<String> values = redisTemplate.opsForValue().multiGet(keys);
 
@@ -50,4 +53,15 @@ public class RedisCacheService implements CacheService {
 
         return resultMap;
     }
+
+    @Override
+    public String getCacheKey(String resource, String id) {
+        return resource + ":" + id;
+    }
+
+    @Override
+    public String getCachePrefix(String resource) {
+        return resource + ":";
+    }
+
 }

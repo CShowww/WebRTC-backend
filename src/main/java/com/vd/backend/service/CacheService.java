@@ -15,4 +15,7 @@ public interface CacheService {
 
     Map<String, String> getValueByPrefix(String keyPrefix);
 
+    String getCacheKey(String resource, String id);
+
+    String getCachePrefix(String resource);
 }
