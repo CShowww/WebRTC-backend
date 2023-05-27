@@ -40,7 +40,7 @@ public class UserController {
     String basePath;
 
     /**
-     * 登陆服务
+     *
      * @param httpServletRequest
      * @return
      */
@@ -126,16 +126,6 @@ public class UserController {
         return R.success(ans.toString());
     }
 
-
-
-
-
-    // TODO, 下载，返回最晚创建的文件
-    // TODO, 上传健康数据，先Append到csv文件中
-    // 然后直接下载
-    /**
-     * 文件下载服务
-     */
 
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id, @RequestParam("category") String category, @RequestParam("filename") String filename) throws IOException {

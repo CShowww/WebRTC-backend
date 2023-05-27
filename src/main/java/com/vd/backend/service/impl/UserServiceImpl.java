@@ -2,7 +2,6 @@ package com.vd.backend.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.vd.backend.entity.bo.User;
 import com.vd.backend.service.AsyncFhirService;
 import com.vd.backend.service.KeycloakService;
