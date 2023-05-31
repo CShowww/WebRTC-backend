@@ -72,6 +72,7 @@ public class PrescriptionController {
 
 
             String medicationId = res.getJSONObject("medicationReference").getString("reference"); //1
+            medicationId = medicationId.split("/")[1];
             String medicationName = res.getJSONObject("medicationReference").getString("display"); //1
 
             String patientId = res.getJSONObject("subject").getString("reference"); //1
